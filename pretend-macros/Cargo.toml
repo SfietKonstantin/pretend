@@ -1,0 +1,17 @@
+[package]
+name = "pretend-macros"
+version = "0.1.0"
+authors = ["Lucien XU <sfietkonstantin@free.fr>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+http = "0.2"
+lazy_static = "1.4"
+proc-macro2 = "1.0"
+quote = "1.0"
+regex = "1.5"
+syn = "1.0"
+thiserror = "1.0"

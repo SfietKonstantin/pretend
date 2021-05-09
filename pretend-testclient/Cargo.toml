@@ -1,0 +1,10 @@
+[package]
+name = "pretend-testclient"
+version = "0.1.0"
+authors = ["Lucien XU <sfietkonstantin@free.fr>"]
+edition = "2018"
+
+[dependencies]
+pretend = { path = "../pretend" }
+serde_urlencoded = "0.7"
+serde_json = "1.0"
