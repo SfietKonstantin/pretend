@@ -52,6 +52,6 @@ fn implement_pretend(item: ItemTrait) -> IResult<TokenStream2> {
             #(#methods)*
         }
     };
-//    panic!("{}", tokens);
+    //    panic!("{}", tokens);
     Ok(tokens)
 }

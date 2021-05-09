@@ -1,5 +1,4 @@
-use pretend::{Deserialize, Json, Pretend, Result, Serialize, Url};
-use pretend_macros::{header, pretend, request};
+use pretend::{header, pretend, request, Deserialize, Json, Pretend, Result, Serialize, Url};
 use pretend_reqwest::Client as RClient;
 use std::collections::HashMap;
 

@@ -2,7 +2,7 @@
 
 members = [
     "pretend",
-    "pretend-macros",
+    "pretend-codegen",
     "pretend-reqwest",
     "pretend-testclient",
 ]

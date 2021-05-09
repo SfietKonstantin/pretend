@@ -43,7 +43,7 @@ pub mod thirdparty;
 mod errors;
 
 pub use self::errors::{Error, Result};
-pub use pretend_macros::{header, pretend, request};
+pub use pretend_codegen::{header, pretend, request};
 pub use thirdparty::async_trait::async_trait;
 pub use thirdparty::http::{HeaderMap, Method, StatusCode};
 pub use thirdparty::serde::de::DeserializeOwned;
