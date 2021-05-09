@@ -1,5 +1,6 @@
 use pretend::{header, pretend, request, Deserialize, Json, Pretend, Result, Serialize, Url, UrlResolver};
 use pretend_reqwest::Client as RClient;
+use pretend_isahc::Client as IClient;
 use std::collections::HashMap;
 use pretend::client::Client;
 
@@ -59,6 +60,16 @@ fn httpbin_url() -> Url {
 impl Default for Tester<RClient> {
     fn default() -> Self {
         let client = RClient::default();
+        let client = Pretend::for_client(client).with_url(httpbin_url());
+        Tester {
+            pretend: client
+        }
+    }
+}
+
+impl Default for Tester<IClient> {
+    fn default() -> Self {
+        let client = IClient::new().unwrap();
         let client = Pretend::for_client(client).with_url(httpbin_url());
         Tester {
             pretend: client
@@ -142,6 +153,7 @@ macro_rules! gen_test {
         #[tokio::test]
         async fn $test() {
             Tester::<RClient>::default().$test().await;
+            Tester::<IClient>::default().$test().await;
         }
     }
 }
