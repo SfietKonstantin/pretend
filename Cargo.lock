@@ -513,11 +513,16 @@ name = "pretend"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bytes",
+ "encoding_rs",
  "http",
+ "mime",
  "pretend-codegen",
  "pretend-reqwest",
  "pretend-testclient",
  "serde",
+ "serde_json",
+ "serde_urlencoded",
  "thiserror",
  "tokio",
  "trybuild",
@@ -544,7 +549,6 @@ dependencies = [
  "hyper",
  "pretend",
  "reqwest",
- "thiserror",
 ]
 
 [[package]]
@@ -552,8 +556,6 @@ name = "pretend-testclient"
 version = "0.1.0"
 dependencies = [
  "pretend",
- "serde_json",
- "serde_urlencoded",
 ]
 
 [[package]]

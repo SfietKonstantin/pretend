@@ -2,145 +2,180 @@
 
 //! Internal classes used by the macro
 
-use crate::client::{Client, RequestBuilder, ResponseBody};
-use crate::{
-    async_trait, DeserializeOwned, Error, HeaderMap, Json, JsonResult, Method, Pretend, ResolveUrl,
-    Response, Result,
-};
-use http::header::HeaderName;
+use crate::client::{Bytes, Client, Method};
+use crate::{Error, HeaderMap, Json, JsonResult, Pretend, ResolveUrl, Response, Result};
+use http::header::{HeaderName, CONTENT_TYPE};
 use http::HeaderValue;
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 use std::str::FromStr;
+use url::Url;
 
-pub struct MacroSupport<'a, C, R>
+pub enum Body<'a, T>
 where
-    C: Client + Send + Sync,
-    R: ResolveUrl + Send + Sync,
+    T: Serialize + Send + Sync,
 {
-    pretend: &'a Pretend<C, R>,
+    None,
+    Raw(&'static [u8]),
+    Form(&'a T),
+    Json(&'a T),
 }
 
-impl<'a, C, R> MacroSupport<'a, C, R>
+pub struct MacroSupport<'p, C, R>
 where
     C: Client + Send + Sync,
     R: ResolveUrl + Send + Sync,
 {
-    pub fn new(pretend: &'a Pretend<C, R>) -> Self {
+    pretend: &'p Pretend<C, R>,
+}
+
+impl<'p, C, R> MacroSupport<'p, C, R>
+where
+    C: Client + Send + Sync,
+    R: ResolveUrl + Send + Sync,
+{
+    pub fn new(pretend: &'p Pretend<C, R>) -> Self {
         MacroSupport { pretend }
     }
 
-    pub fn request(
-        &self,
-        method: Method,
-        path: &str,
-        headers: HeaderMap,
-    ) -> Result<C::RequestBuilder> {
+    pub fn create_url(&self, path: &str) -> Result<Url> {
         let resolver = &self.pretend.resolver;
-        let url = resolver
+        resolver
             .resolve_url(path)
-            .map_err(|err| Error::Request(Box::new(err)))?;
+            .map_err(|err| Error::Request(Box::new(err)))
+    }
 
+    pub async fn request<'a, T>(
+        &'a self,
+        method: Method,
+        url: Url,
+        mut headers: HeaderMap,
+        body: Body<'a, T>,
+    ) -> Result<Response<Bytes>>
+    where
+        T: Serialize + Send + Sync,
+    {
         let client = &self.pretend.client;
-        client.request_builder(method, url)?.headers(headers)
-    }
 
-    pub async fn execute(&self, request: C::Request) -> Result<Response<C::ResponseBody>> {
-        let result = self.pretend.client.execute(request).await;
-        result
-    }
-}
+        let (headers, body) = match body {
+            Body::None => (headers, None),
+            Body::Raw(raw) => (headers, Some(Bytes::from_static(raw))),
+            Body::Form(form) => {
+                headers.insert(
+                    CONTENT_TYPE,
+                    HeaderValue::from_static("application/x-www-form-urlencoded"),
+                );
 
-pub trait IntoBody {
-    fn into_body(self) -> Vec<u8>;
-}
+                let encoded = serde_urlencoded::to_string(form);
+                let encoded = encoded.map_err(|err| Error::Request(Box::new(err)))?;
+                let body = Some(Bytes::from(encoded));
 
-impl IntoBody for String {
-    fn into_body(self) -> Vec<u8> {
-        self.into_bytes()
-    }
-}
+                (headers, body)
+            }
+            Body::Json(json) => {
+                headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
 
-impl<'a> IntoBody for &'a str {
-    fn into_body(self) -> Vec<u8> {
-        self.as_bytes().to_vec()
-    }
-}
+                let encoded = serde_json::to_vec(json);
+                let encoded = encoded.map_err(|err| Error::Request(Box::new(err)))?;
+                let body = Some(Bytes::from(encoded));
 
-impl IntoBody for Vec<u8> {
-    fn into_body(self) -> Vec<u8> {
-        self
-    }
-}
-
-impl<'a> IntoBody for &'a [u8] {
-    fn into_body(self) -> Vec<u8> {
-        self.to_vec()
+                (headers, body)
+            }
+        };
+        client.execute(method, url, headers, body).await
     }
 }
 
-#[async_trait]
-pub trait MacroResponseSupport<T> {
-    async fn into_response(self) -> Result<T>;
-}
-
-#[async_trait]
-impl<B> MacroResponseSupport<String> for Response<B>
+pub fn build_query<T>(mut url: Url, query: &T) -> Result<Url>
 where
-    B: ResponseBody + Send,
+    T: Serialize,
 {
-    async fn into_response(self) -> Result<String> {
+    {
+        let mut pairs = url.query_pairs_mut();
+        let serializer = serde_urlencoded::Serializer::new(&mut pairs);
+        query
+            .serialize(serializer)
+            .map_err(|err| Error::Request(Box::new(err)))?;
+    }
+    Ok(url)
+}
+
+pub fn build_header(headers: &mut HeaderMap, name: &str, value: &str) -> Result<()> {
+    let name = HeaderName::from_str(name).map_err(|err| Error::Request(Box::new(err)))?;
+    let value = HeaderValue::from_str(value).map_err(|err| Error::Request(Box::new(err)))?;
+    headers.append(name, value);
+    Ok(())
+}
+
+pub trait IntoResponse<T> {
+    fn into_response(self) -> Result<T>;
+}
+
+impl IntoResponse<Response<()>> for Response<Bytes> {
+    fn into_response(self) -> Result<Response<()>> {
+        Ok(self.map_body(|_| ()))
+    }
+}
+
+impl IntoResponse<String> for Response<Bytes> {
+    fn into_response(self) -> Result<String> {
         if self.status.is_success() {
-            self.body.text().await
+            Ok(parse_string_body(&self))
         } else {
             Err(Error::Status(self.status))
         }
     }
 }
 
-#[async_trait]
-impl<B> MacroResponseSupport<Response<String>> for Response<B>
-where
-    B: ResponseBody + Send,
-{
-    async fn into_response(self) -> Result<Response<String>> {
-        let body = self.body.text().await?;
+impl IntoResponse<Response<String>> for Response<Bytes> {
+    fn into_response(self) -> Result<Response<String>> {
+        let body = parse_string_body(&self);
         Ok(Response::new(self.status, self.headers, body))
     }
 }
 
-#[async_trait]
-impl<B> MacroResponseSupport<Vec<u8>> for Response<B>
-where
-    B: ResponseBody + Send,
-{
-    async fn into_response(self) -> Result<Vec<u8>> {
+fn parse_string_body(response: &Response<Bytes>) -> String {
+    // Taken from reqwest
+    let content_type = response
+        .headers
+        .get(CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.parse::<mime::Mime>().ok());
+    let encoding_name = content_type
+        .as_ref()
+        .and_then(|mime| mime.get_param("charset").map(|charset| charset.as_str()))
+        .unwrap_or("utf-8");
+
+    let encoding =
+        encoding_rs::Encoding::for_label(encoding_name.as_bytes()).unwrap_or(encoding_rs::UTF_8);
+
+    let (text, _, _) = encoding.decode(&response.body);
+    text.to_string()
+}
+
+impl IntoResponse<Vec<u8>> for Response<Bytes> {
+    fn into_response(self) -> Result<Vec<u8>> {
         if self.status.is_success() {
-            self.body.bytes().await
+            Ok(self.body.to_vec())
         } else {
             Err(Error::Status(self.status))
         }
     }
 }
 
-#[async_trait]
-impl<B> MacroResponseSupport<Response<Vec<u8>>> for Response<B>
-where
-    B: ResponseBody + Send,
-{
-    async fn into_response(self) -> Result<Response<Vec<u8>>> {
-        let body = self.body.bytes().await?;
-        Ok(Response::new(self.status, self.headers, body))
+impl IntoResponse<Response<Vec<u8>>> for Response<Bytes> {
+    fn into_response(self) -> Result<Response<Vec<u8>>> {
+        Ok(Response::new(self.status, self.headers, self.body.to_vec()))
     }
 }
 
-#[async_trait]
-impl<B, T> MacroResponseSupport<Json<T>> for Response<B>
+impl<T> IntoResponse<Json<T>> for Response<Bytes>
 where
-    B: ResponseBody + Send,
     T: DeserializeOwned,
 {
-    async fn into_response(self) -> Result<Json<T>> {
+    fn into_response(self) -> Result<Json<T>> {
         if self.status.is_success() {
-            let value = self.body.json::<T>().await?;
+            let value = parse_json(self.body)?;
             Ok(Json { value })
         } else {
             Err(Error::Status(self.status))
@@ -148,54 +183,48 @@ where
     }
 }
 
-#[async_trait]
-impl<B, T> MacroResponseSupport<Response<Json<T>>> for Response<B>
+impl<T> IntoResponse<Response<Json<T>>> for Response<Bytes>
 where
-    B: ResponseBody + Send,
     T: DeserializeOwned,
 {
-    async fn into_response(self) -> Result<Response<Json<T>>> {
-        let value = self.body.json::<T>().await?;
+    fn into_response(self) -> Result<Response<Json<T>>> {
+        let value = parse_json(self.body)?;
         let body = Json { value };
         Ok(Response::new(self.status, self.headers, body))
     }
 }
 
-#[async_trait]
-impl<B, T, E> MacroResponseSupport<JsonResult<T, E>> for Response<B>
+impl<T, E> IntoResponse<JsonResult<T, E>> for Response<Bytes>
 where
-    B: ResponseBody + Send,
     T: DeserializeOwned,
     E: DeserializeOwned,
 {
-    async fn into_response(self) -> Result<JsonResult<T, E>> {
+    fn into_response(self) -> Result<JsonResult<T, E>> {
         if self.status.is_success() {
-            let value = self.body.json::<T>().await?;
+            let value = parse_json(self.body)?;
             Ok(JsonResult::Ok(value))
         } else {
-            let value = self.body.json::<E>().await?;
+            let value = parse_json(self.body)?;
             Ok(JsonResult::Err(value))
         }
     }
 }
 
-#[async_trait]
-impl<B, T, E> MacroResponseSupport<Response<JsonResult<T, E>>> for Response<B>
+impl<T, E> IntoResponse<Response<JsonResult<T, E>>> for Response<Bytes>
 where
-    B: ResponseBody + Send,
     T: DeserializeOwned,
     E: DeserializeOwned,
 {
-    async fn into_response(self) -> Result<Response<JsonResult<T, E>>> {
+    fn into_response(self) -> Result<Response<JsonResult<T, E>>> {
         if self.status.is_success() {
-            let value = self.body.json::<T>().await?;
+            let value = parse_json(self.body)?;
             Ok(Response::new(
                 self.status,
                 self.headers,
                 JsonResult::Ok(value),
             ))
         } else {
-            let value = self.body.json::<E>().await?;
+            let value = parse_json(self.body)?;
             Ok(Response::new(
                 self.status,
                 self.headers,
@@ -205,19 +234,9 @@ where
     }
 }
 
-#[async_trait]
-impl<B> MacroResponseSupport<Response<()>> for Response<B>
+fn parse_json<T>(body: Bytes) -> Result<T>
 where
-    B: ResponseBody + Send,
+    T: DeserializeOwned,
 {
-    async fn into_response(self) -> Result<Response<()>> {
-        Ok(Response::new(self.status, self.headers, ()))
-    }
-}
-
-pub fn build_header(headers: &mut HeaderMap, name: &str, value: &str) -> Result<()> {
-    let name = HeaderName::from_str(name).map_err(|err| Error::Request(Box::new(err)))?;
-    let value = HeaderValue::from_str(value).map_err(|err| Error::Request(Box::new(err)))?;
-    headers.append(name, value);
-    Ok(())
+    serde_json::from_slice(body.as_ref()).map_err(|err| Error::Body(Box::new(err)))
 }

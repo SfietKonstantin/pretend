@@ -8,23 +8,24 @@ use syn::TraitItemMethod;
 pub(crate) fn implement_body(method: &TraitItemMethod) -> IResult<TokenStream> {
     let kind = get_body(method)?;
     let implem = match kind {
-        BodyKind::None => TokenStream::new(),
+        BodyKind::None => {
+            quote! {
+                let body = pretend::internal::Body::<()>::None;
+            }
+        }
         BodyKind::Body => {
             quote! {
-                let builder = {
-                    let body = pretend::internal::IntoBody::into_body(body);
-                    pretend::client::RequestBuilder::body(builder, body)?
-                };
+                let body = pretend::internal::Body::<()>::Raw(body.as_ref());
             }
         }
         BodyKind::Form => {
             quote! {
-                let builder = pretend::client::RequestBuilder::form(builder, &form)?;
+                let body = pretend::internal::Body::Form(&form);
             }
         }
         BodyKind::Json => {
             quote! {
-                let builder = pretend::client::RequestBuilder::json(builder, &json)?;
+                let body = pretend::internal::Body::Json(&json);
             }
         }
     };

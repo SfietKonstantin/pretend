@@ -6,5 +6,3 @@ edition = "2018"
 
 [dependencies]
 pretend = { path = "../pretend" }
-serde_urlencoded = "0.7"
-serde_json = "1.0"

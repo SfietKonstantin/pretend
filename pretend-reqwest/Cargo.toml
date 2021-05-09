@@ -7,5 +7,4 @@ edition = "2018"
 [dependencies]
 pretend = { path = "../pretend" }
 reqwest = { version = "0.11", features = ["json"] }
-thiserror = "1.0"
 hyper = ">=0.14, <0.14.5" # Make socket2 compatible with Rust 1.44
