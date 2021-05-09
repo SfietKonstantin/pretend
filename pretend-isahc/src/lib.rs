@@ -1,3 +1,8 @@
+//! `isahc` based `pretend` client
+
+#![warn(missing_docs)]
+#![deny(unsafe_code)]
+
 pub use isahc;
 
 use isahc::http::Request;
@@ -6,15 +11,24 @@ use pretend::client::{async_trait, Bytes, Client as PClient, Method};
 use pretend::{Error, HeaderMap, Response, Result, Url};
 use std::mem;
 
+/// `ishac` based `pretend` client
 pub struct Client {
     client: HttpClient,
 }
 
 impl Client {
+    /// Constructor with custom client
+    ///
+    /// This constructor creates a client implementation
+    /// for `pretend` wrapping the supplied `isahc` client.
     pub fn with_client(client: HttpClient) -> Self {
         Client { client }
     }
 
+    /// Constructor
+    ///
+    /// This constructor creates a client implementation
+    /// for `pretend` using a default `isahc` client.
     pub fn new() -> Result<Self> {
         let client = HttpClient::new().map_err(|err| Error::Client(Box::new(err)))?;
         Ok(Client { client })
@@ -45,7 +59,6 @@ impl PClient for Client {
         let request = request.map_err(|err| Error::Request(Box::new(err)))?;
         let response = self.client.send_async(request).await;
         let mut response = response.map_err(|err| Error::Response(Box::new(err)))?;
-        // let (parts, body) = response.into_parts();
 
         let status = mem::take(response.status_mut());
         let headers = mem::take(response.headers_mut());

@@ -1,3 +1,8 @@
+//! `reqwest` based `pretend` client
+
+#![warn(missing_docs)]
+#![deny(unsafe_code)]
+
 pub use reqwest;
 
 use pretend::client::{async_trait, Bytes, Client as PClient, Method};
@@ -5,12 +10,17 @@ use pretend::{Error, HeaderMap, Response as PResponse, Result, Url};
 use reqwest::Client as RClient;
 use std::mem;
 
+/// `reqwest` based `pretend` client
 #[derive(Default)]
 pub struct Client {
     client: RClient,
 }
 
 impl Client {
+    /// Constructor with custom client
+    ///
+    /// This constructor creates a client implementation
+    /// for `pretend` wrapping the supplied `reqwest` client.
     pub fn new(client: RClient) -> Self {
         Client { client }
     }

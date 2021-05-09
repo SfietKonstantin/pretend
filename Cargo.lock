@@ -699,7 +699,6 @@ dependencies = [
  "pretend-codegen",
  "pretend-isahc",
  "pretend-reqwest",
- "pretend-testclient",
  "serde",
  "serde_json",
  "serde_urlencoded",
@@ -737,13 +736,6 @@ dependencies = [
  "hyper",
  "pretend",
  "reqwest",
-]
-
-[[package]]
-name = "pretend-testclient"
-version = "0.1.0"
-dependencies = [
- "pretend",
 ]
 
 [[package]]

@@ -1,8 +1,9 @@
-use pretend::{header, pretend, request, Deserialize, Json, Pretend, Result, Serialize, Url, UrlResolver};
-use pretend_reqwest::Client as RClient;
-use pretend_isahc::Client as IClient;
-use std::collections::HashMap;
 use pretend::client::Client;
+use pretend::resolver::UrlResolver;
+use pretend::{header, pretend, request, Deserialize, Json, Pretend, Result, Serialize, Url};
+use pretend_isahc::Client as IClient;
+use pretend_reqwest::Client as RClient;
+use std::collections::HashMap;
 
 #[derive(Deserialize)]
 struct ReturnValue<T = ()> {
@@ -49,7 +50,10 @@ trait HttpBin {
     async fn post_with_form(&self, form: &TestData) -> Result<Json<ReturnValue>>;
 }
 
-struct Tester<C> where C: Client + Send + Sync {
+struct Tester<C>
+where
+    C: Client + Send + Sync,
+{
     pretend: Pretend<C, UrlResolver>,
 }
 
@@ -61,9 +65,7 @@ impl Default for Tester<RClient> {
     fn default() -> Self {
         let client = RClient::default();
         let client = Pretend::for_client(client).with_url(httpbin_url());
-        Tester {
-            pretend: client
-        }
+        Tester { pretend: client }
     }
 }
 
@@ -71,13 +73,14 @@ impl Default for Tester<IClient> {
     fn default() -> Self {
         let client = IClient::new().unwrap();
         let client = Pretend::for_client(client).with_url(httpbin_url());
-        Tester {
-            pretend: client
-        }
+        Tester { pretend: client }
     }
 }
 
-impl<C> Tester<C> where C: Client + Send + Sync {
+impl<C> Tester<C>
+where
+    C: Client + Send + Sync,
+{
     async fn test_get(self) {
         let result = self.pretend.get().await;
         assert!(result.is_ok());
@@ -145,7 +148,6 @@ impl<C> Tester<C> where C: Client + Send + Sync {
         let result = self.pretend.post_with_form(&form).await.unwrap();
         assert_eq!(result.value().form, Some(expected_args));
     }
-
 }
 
 macro_rules! gen_test {
@@ -155,7 +157,7 @@ macro_rules! gen_test {
             Tester::<RClient>::default().$test().await;
             Tester::<IClient>::default().$test().await;
         }
-    }
+    };
 }
 
 gen_test!(test_get);
