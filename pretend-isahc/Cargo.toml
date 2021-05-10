@@ -1,9 +1,17 @@
 [package]
 name = "pretend-isahc"
-version = "0.1.0"
-authors = ["Lucien XU <sfietkonstantin@free.fr>"]
 edition = "2018"
+version = "0.1.0"
+description = "isahc based client for pretend."
+authors = ["Lucien XU <sfietkonstantin@free.fr>"]
+license = "MIT"
+homepage = "https://github.com/SfietKonstantin/pretend"
+documentation = "https://github.com/SfietKonstantin/pretend"
+repository = "https://github.com/SfietKonstantin/pretend"
+keywords = ["http", "client", "web", "async", "declarative"]
+categories = ["web-programming::http-client"]
+readme = "README.md"
 
 [dependencies]
-pretend = { path = "../pretend" }
+pretend = { path = "../pretend",  version = "0.1.0" }
 isahc = "1.3"
