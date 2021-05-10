@@ -8,25 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: true
 
-      - name: Publish pretend-codegen
-        run: cd pretend-codegen && cargo publish --token "${CARGO_TOKEN}"
-        env:
-          CARGO_TOKEN: ${{ secrets.CARGO_TOKEN }}
+      - name: Install cargo workspace
+        run: cargo install cargo-workspaces
 
-      - name: Publish pretend
-        run: cd pretend && cargo publish --token "${CARGO_TOKEN}"
-        env:
-          CARGO_TOKEN: ${{ secrets.CARGO_TOKEN }}
+      - name: Cargo login
+        run: cargo login ${{ secrets.CARGO_TOKEN }}
 
-      - name: Publish pretend-reqwest
-        run: cd pretend-reqwest && cargo publish --token "${CARGO_TOKEN}"
-        env:
-          CARGO_TOKEN: ${{ secrets.CARGO_TOKEN }}
-
-      - name: Publish pretend-isahc
-        run: cd pretend-isahc && cargo publish --token "${CARGO_TOKEN}"
-        env:
-          CARGO_TOKEN: ${{ secrets.CARGO_TOKEN }}
+      - name: Publish
+        run: cargo workspaces publish --from-git --skip-published
