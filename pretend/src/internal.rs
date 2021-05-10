@@ -1,6 +1,6 @@
 #![doc(hidden)]
 
-//! Internal classes used by the macro
+//! Internal module used by the code generator
 
 use crate::client::{Bytes, Client, Method};
 use crate::{Error, HeaderMap, Json, JsonResult, Pretend, ResolveUrl, Response, Result};
@@ -11,16 +11,22 @@ use serde::Serialize;
 use std::str::FromStr;
 use url::Url;
 
+/// Request body
 pub enum Body<'a, T>
 where
     T: Serialize + Send + Sync,
 {
+    /// No body
     None,
+    /// Raw bytes
     Raw(&'static [u8]),
+    /// Form
     Form(&'a T),
+    /// Json
     Json(&'a T),
 }
 
+/// Helper for pretend code generator
 pub struct MacroSupport<'p, C, R>
 where
     C: Client + Send + Sync,
@@ -34,10 +40,14 @@ where
     C: Client + Send + Sync,
     R: ResolveUrl + Send + Sync,
 {
+    /// Constructor
+    ///
+    /// It wraps a `Pretend` instance
     pub fn new(pretend: &'p Pretend<C, R>) -> Self {
         MacroSupport { pretend }
     }
 
+    /// Create an url from the resolver and a path
     pub fn create_url(&self, path: &str) -> Result<Url> {
         let resolver = &self.pretend.resolver;
         resolver
@@ -45,6 +55,10 @@ where
             .map_err(|err| Error::Request(Box::new(err)))
     }
 
+    /// Execute a request
+    ///
+    /// Execute a request from request components.
+    /// Serialize the body if needed.
     pub async fn request<'a, T>(
         &'a self,
         method: Method,
@@ -86,6 +100,7 @@ where
     }
 }
 
+/// Update the query component of an Url
 pub fn build_query<T>(mut url: Url, query: &T) -> Result<Url>
 where
     T: Serialize,
@@ -100,6 +115,7 @@ where
     Ok(url)
 }
 
+/// Append a component to a header
 pub fn build_header(headers: &mut HeaderMap, name: &str, value: &str) -> Result<()> {
     let name = HeaderName::from_str(name).map_err(|err| Error::Request(Box::new(err)))?;
     let value = HeaderValue::from_str(value).map_err(|err| Error::Request(Box::new(err)))?;
@@ -107,13 +123,29 @@ pub fn build_header(headers: &mut HeaderMap, name: &str, value: &str) -> Result<
     Ok(())
 }
 
+/// Trait to convert into a response
+///
+/// This trait is responsible to convert a raw body
+/// into a response. Implementations of these traits
+/// handle raw bytes, strings, JSON and responses
 pub trait IntoResponse<T> {
     fn into_response(self) -> Result<T>;
 }
 
+impl IntoResponse<()> for Response<Bytes> {
+    fn into_response(self) -> Result<()> {
+        if self.status.is_success() {
+            Ok(())
+        } else {
+            Err(Error::Status(self.status))
+        }
+    }
+}
+
 impl IntoResponse<Response<()>> for Response<Bytes> {
     fn into_response(self) -> Result<Response<()>> {
-        Ok(self.map_body(|_| ()))
+        let (status, headers, _) = self.into_parts();
+        Ok(Response::new(status, headers, ()))
     }
 }
 

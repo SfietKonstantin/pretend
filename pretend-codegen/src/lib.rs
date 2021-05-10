@@ -47,11 +47,10 @@ fn implement_pretend(item: ItemTrait) -> IResult<TokenStream2> {
         #[pretend::client::async_trait]
         impl<C, R> #name for pretend::Pretend<C, R>
             where C: pretend::client::Client + Send + Sync,
-                  R: pretend::ResolveUrl + Send + Sync
+                  R: pretend::resolver::ResolveUrl + Send + Sync
         {
             #(#methods)*
         }
     };
-    //    panic!("{}", tokens);
     Ok(tokens)
 }

@@ -20,7 +20,6 @@ url = "2.2"
 [dev-dependencies]
 pretend-isahc = { path = "../pretend-isahc" }
 pretend-reqwest = { path = "../pretend-reqwest" }
-pretend-testclient = { path = "../pretend-testclient" }
 tokio = { version = "1.5", features = ["macros", "rt-multi-thread"] }
 trybuild = "1.0"
 
