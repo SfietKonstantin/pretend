@@ -9,8 +9,8 @@
 //! This method takes a method, url, header and body (as raw bytes) and should return
 //! a response with raw bytes as body.
 //!
-//! Implementations should be marked with [`client::async_trait`] due to Rust limitations
-//! with futures and traits.
+//! Implementations should be marked with [`client::async_trait`](`self::async_trait`) due to Rust
+//! limitations with futures and traits.
 
 pub use async_trait::async_trait;
 pub use bytes::Bytes;
