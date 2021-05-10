@@ -44,18 +44,17 @@ fn implement_method(method: &TraitItemMethod) -> IResult<TokenStream> {
 
     Ok(quote! {
         #sig {
-            let method = pretend::Method::#method;
+            let method = pretend::client::Method::#method;
             #path
             #headers
-
-            let support = pretend::internal::MacroSupport::new(self);
-            let builder = support.request(method, path, headers)?;
-            #query
             #body
 
-            let request = pretend::client::RequestBuilder::build(builder);
-            let response = support.execute(request).await?;
-            pretend::internal::MacroResponseSupport::into_response(response).await
+            let support = pretend::internal::MacroSupport::new(self);
+            let url = support.create_url(path)?;
+            #query
+
+            let response = support.request(method, url, headers, body).await?;
+            pretend::internal::IntoResponse::into_response(response)
         }
     })
 }

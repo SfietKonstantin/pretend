@@ -6,7 +6,7 @@ use syn::TraitItemMethod;
 pub(crate) fn implement_query(method: &TraitItemMethod) -> TokenStream {
     if has_query(method) {
         quote! {
-            let builder = pretend::client::RequestBuilder::query(builder, &query)?;
+            let url = pretend::internal::build_query(url, &query)?;
         }
     } else {
         TokenStream::new()

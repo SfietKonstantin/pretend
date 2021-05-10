@@ -38,19 +38,20 @@
 
 pub mod client;
 pub mod internal;
-pub mod thirdparty;
 
 mod errors;
 
 pub use self::errors::{Error, Result};
+pub use http;
+pub use http::{HeaderMap, StatusCode};
 pub use pretend_codegen::{header, pretend, request};
-pub use thirdparty::async_trait::async_trait;
-pub use thirdparty::http::{HeaderMap, Method, StatusCode};
-pub use thirdparty::serde::de::DeserializeOwned;
-pub use thirdparty::serde::{Deserialize, Serialize};
-pub use thirdparty::url::{ParseError, Url};
+pub use serde;
+pub use serde::{Deserialize, Serialize};
+pub use url;
+pub use url::{ParseError, Url};
 
 use crate::client::Client;
+use serde::de::DeserializeOwned;
 use std::result;
 
 pub struct Response<T> {
@@ -78,6 +79,33 @@ impl<T> Response<T> {
 
     pub fn body(&self) -> &T {
         &self.body
+    }
+
+    pub fn into_body(self) -> T {
+        self.body
+    }
+
+    pub fn map_body<F, U>(self, f: F) -> Response<U>
+    where
+        F: FnOnce(T) -> U,
+    {
+        Response {
+            status: self.status,
+            headers: self.headers,
+            body: f(self.body),
+        }
+    }
+
+    pub fn try_map_body<F, U>(self, f: F) -> Result<Response<U>>
+    where
+        F: FnOnce(T) -> Result<U>,
+    {
+        let body = f(self.body)?;
+        Ok(Response {
+            status: self.status,
+            headers: self.headers,
+            body,
+        })
     }
 }
 

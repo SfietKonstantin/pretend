@@ -39,12 +39,12 @@ fn implement_pretend(item: ItemTrait) -> IResult<TokenStream2> {
         .collect::<IResult<Vec<_>>>()?;
 
     let tokens = quote! {
-        #[pretend::async_trait]
+        #[pretend::client::async_trait]
         trait #name {
             #(#items)*
         }
 
-        #[pretend::async_trait]
+        #[pretend::client::async_trait]
         impl<C, R> #name for pretend::Pretend<C, R>
             where C: pretend::client::Client + Send + Sync,
                   R: pretend::ResolveUrl + Send + Sync

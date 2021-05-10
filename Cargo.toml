@@ -3,6 +3,7 @@
 members = [
     "pretend",
     "pretend-codegen",
+    "pretend-isahc",
     "pretend-reqwest",
     "pretend-testclient",
 ]
