@@ -1,0 +1,13 @@
+categories:
+  - title: "Added"
+    labels:
+      - feature
+      - enhancement
+  - title: "Fixed"
+    label: bug
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+no-changes-template: '- No changes'
+template: |
+  # Changed
+
+  $CHANGES

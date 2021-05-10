@@ -1,0 +1,15 @@
+name: Configure repository
+on:
+  push:
+    branches: [main]
+
+jobs:
+  configure-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: micnncim/action-label-syncer@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
