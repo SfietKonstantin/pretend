@@ -1,10 +1,18 @@
 [package]
 name = "pretend-reqwest"
-version = "0.1.0"
-authors = ["Lucien XU <sfietkonstantin@free.fr>"]
 edition = "2018"
+version = "0.1.0"
+description = "reqwest based client for pretend."
+authors = ["Lucien XU <sfietkonstantin@free.fr>"]
+license = "MIT"
+homepage = "https://github.com/SfietKonstantin/pretend"
+documentation = "https://github.com/SfietKonstantin/pretend"
+repository = "https://github.com/SfietKonstantin/pretend"
+keywords = ["http", "client", "web", "async", "declarative"]
+categories = ["web-programming::http-client"]
+readme = "README.md"
 
 [dependencies]
-pretend = { path = "../pretend" }
-reqwest = { version = "0.11", features = ["json"] }
+pretend = { path = "../pretend",  version = "0.1.0" }
+reqwest = { version = "0.11" }
 hyper = ">=0.14, <0.14.5" # Make socket2 compatible with Rust 1.44

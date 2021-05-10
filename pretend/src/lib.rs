@@ -1,6 +1,6 @@
 //! `pretend` HTTP client
 //!
-//! `pretend` is a modular, [Feign]-inspired HTTP client based on macros. It's goal is to decouple
+//! `pretend` is a modular, [Feign]-inspired, HTTP client based on macros. It's goal is to decouple
 //! the definition of a REST API from it's implementation.
 //!
 //! Some features:
