@@ -45,7 +45,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: "0.16.0"
-          args: "-p pretend"
+          args: "--exclude-files pretend/tests/*.rs --exclude-files pretend-codegen/*.rs --exclude-files pretend-codegen/method/*.rs"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1

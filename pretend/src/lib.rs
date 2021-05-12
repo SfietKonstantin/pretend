@@ -369,6 +369,15 @@ where
     }
 }
 
+impl<T> AsRef<T> for Json<T>
+where
+    T: DeserializeOwned,
+{
+    fn as_ref(&self) -> &T {
+        &self.value
+    }
+}
+
 /// JSON result
 ///
 /// This wrapper type indicate that a method should return
@@ -377,6 +386,7 @@ where
 /// When the HTTP request is successful, the `Ok` variant will
 /// be returned, and when the HTTP request has failed, the
 /// `Err` variant will be returned.
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum JsonResult<T, E>
 where
     T: DeserializeOwned,
