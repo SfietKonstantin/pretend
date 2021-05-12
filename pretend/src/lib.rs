@@ -203,15 +203,15 @@
 //!
 //! # Examples
 //!
-//! Please refer to the examples folder for more examples. There are not many examples yet, but
-//! we are working on it !
+//! More examples are available in the [examples folder].
+//!
+//! [examples folder]: https://github.com/SfietKonstantin/pretend/tree/main/pretend/examples
 //!
 //! # The future
 //!
 //! Here is a quick roadmap
 //!
 //! - Support more clients (awc)
-//! - Write more examples
 //! - Introduce more attributes to mark method parameters (body, json, params)
 //! - Better error reporting
 //! - Introduce interceptors
@@ -352,6 +352,7 @@ where
 ///
 /// This wrapper type indicates that a method should return
 /// a JSON-serialized body.
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Json<T>
 where
     T: DeserializeOwned,
