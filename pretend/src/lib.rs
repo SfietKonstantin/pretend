@@ -29,7 +29,7 @@
 //! struct can be constructed by passing a client implementation, and the REST API's base url. In
 //! the following example, we are using the [`reqwest`] based client.
 //!
-//! [`reqwest`]: https://docs.rs/reqwest/
+//! [`reqwest`]: https://crates.io/crates/pretend-reqwest
 //!
 //! ```rust
 //! use pretend::{Pretend, Url};
@@ -186,8 +186,8 @@
 //!
 //! `pretend` can be used with
 //!
-//! - `reqwest`
-//! - `isahc`
+//! - [`reqwest`](https://crates.io/crates/pretend-reqwest)
+//! - [`isahc`](https://crates.io/crates/pretend-isahc)
 //!
 //! # Implementing a `pretend` HTTP client
 //!
