@@ -70,7 +70,7 @@
 //! Query parameters and bodies are provided as method parameters. Body type is guessed based on
 //! the parameter name:
 //!
-//! - Parameter `body` will be sent as raw bytes. This requires the body to have 'static lifetime.
+//! - Parameter `body` will be sent as raw bytes.
 //! - Parameter `form` will be serialized as form-encoded using `serde`.
 //! - Parameter `json` will be serialized as JSON using `serde`.
 //!
@@ -87,7 +87,7 @@
 //! #[pretend]
 //! trait HttpBin {
 //!     #[request(method = "POST", path = "/anything")]
-//!     async fn post_bytes(&self, body: &'static [u8]) -> Result<()>;
+//!     async fn post_bytes(&self, body: Vec<u8>) -> Result<()>;
 //!
 //!     #[request(method = "POST", path = "/anything")]
 //!     async fn post_string(&self, body: &'static str) -> Result<()>;

@@ -19,7 +19,7 @@ where
     /// No body
     None,
     /// Raw bytes
-    Raw(&'static [u8]),
+    Raw(Bytes),
     /// Form
     Form(&'a T),
     /// Json
@@ -73,7 +73,7 @@ where
 
         let (headers, body) = match body {
             Body::None => (headers, None),
-            Body::Raw(raw) => (headers, Some(Bytes::from_static(raw))),
+            Body::Raw(raw) => (headers, Some(raw)),
             Body::Form(form) => {
                 headers.insert(
                     CONTENT_TYPE,
