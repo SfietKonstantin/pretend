@@ -1,7 +1,7 @@
 [package]
 name = "pretend"
 edition = "2018"
-version = "0.1.0"
+version = "0.1.1"
 description = "pretend is a modular, Feign-inspired, HTTP client based on macros."
 authors = ["Lucien XU <sfietkonstantin@free.fr>"]
 license = "MIT"

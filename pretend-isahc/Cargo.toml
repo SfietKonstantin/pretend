@@ -1,7 +1,7 @@
 [package]
 name = "pretend-isahc"
 edition = "2018"
-version = "0.1.0"
+version = "0.1.1"
 description = "isahc based client for pretend."
 authors = ["Lucien XU <sfietkonstantin@free.fr>"]
 license = "MIT"
