@@ -15,7 +15,7 @@ pub(crate) fn implement_body(method: &TraitItemMethod) -> IResult<TokenStream> {
         }
         BodyKind::Body => {
             quote! {
-                let body = pretend::internal::Body::<()>::Raw(body.as_ref());
+                let body = pretend::internal::Body::<()>::Raw(pretend::client::Bytes::from(body));
             }
         }
         BodyKind::Form => {
