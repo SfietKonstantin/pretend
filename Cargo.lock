@@ -1462,6 +1462,7 @@ dependencies = [
  "encoding_rs",
  "http",
  "mime",
+ "pretend-awc",
  "pretend-codegen",
  "pretend-isahc",
  "pretend-reqwest",
@@ -1472,6 +1473,14 @@ dependencies = [
  "tokio 1.5.0",
  "trybuild",
  "url",
+]
+
+[[package]]
+name = "pretend-awc"
+version = "0.1.0"
+dependencies = [
+ "awc",
+ "pretend",
 ]
 
 [[package]]

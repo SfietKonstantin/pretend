@@ -3,6 +3,9 @@
 members = [
     "pretend",
     "pretend-codegen",
+
+    # Clients
+    "pretend-awc",
     "pretend-isahc",
     "pretend-reqwest",
 ]
