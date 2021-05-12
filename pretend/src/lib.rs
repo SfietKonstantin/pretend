@@ -207,6 +207,10 @@
 //!
 //! [examples folder]: https://github.com/SfietKonstantin/pretend/tree/main/pretend/examples
 //!
+//! # MSRV
+//!
+//! MSRV for the `pretend` ecosystem is Rust **1.44**.
+//!
 //! # The future
 //!
 //! Here is a quick roadmap

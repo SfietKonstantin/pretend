@@ -18,3 +18,5 @@ Some features:
 This repository contains the code for [`pretend`](pretend/README.md) and 
 [`pretend-codegen`](pretend-codegen/README.md) as well as [`pretend-reqwest`](pretend-reqwest/README.md) 
 and [`pretend-ishac`](pretend-isahc/README.md).
+
+MSRV for the `pretend` ecosystem is Rust **1.44**.
