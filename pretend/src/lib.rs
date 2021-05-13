@@ -217,7 +217,6 @@
 //!
 //! - Support more clients (awc)
 //! - Introduce more attributes to mark method parameters (body, json, params)
-//! - Better error reporting
 //! - Introduce interceptors
 
 #![warn(missing_docs)]

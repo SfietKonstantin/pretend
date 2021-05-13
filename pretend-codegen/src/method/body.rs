@@ -1,11 +1,11 @@
 use super::BodyKind;
-use crate::errors::{IError, IResult};
-use crate::utils::parse_param_name;
+use crate::errors::{ErrorsExt, TOO_MANY_BODIES, TOO_MANY_BODIES_HINT};
+use crate::utils::{parse_param_name, Single, WithTokens};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
-use syn::TraitItemMethod;
+use syn::{Error, Result, TraitItemMethod};
 
-pub(crate) fn implement_body(method: &TraitItemMethod) -> IResult<TokenStream> {
+pub(crate) fn implement_body(method: &TraitItemMethod) -> Result<TokenStream> {
     let kind = get_body(method)?;
     let implem = match kind {
         BodyKind::None => {
@@ -32,32 +32,35 @@ pub(crate) fn implement_body(method: &TraitItemMethod) -> IResult<TokenStream> {
     Ok(implem)
 }
 
-fn get_body(method: &TraitItemMethod) -> IResult<BodyKind> {
-    let name = &method.sig.ident;
-
+fn get_body(method: &TraitItemMethod) -> Result<BodyKind> {
     let inputs = &method.sig.inputs;
-    let mut iter = inputs
+    let single = inputs
         .iter()
         .filter_map(parse_param_name)
-        .filter_map(parse_body_kind);
+        .filter_map(parse_body_kind)
+        .collect::<Single<_>>();
 
-    let first = iter.next();
-    let second = iter.next();
+    match single {
+        Single::None => Ok(BodyKind::None),
+        Single::Single(item) => Ok(item.value),
+        Single::TooMany(bodies) => {
+            let errors = bodies
+                .into_iter()
+                .map(|item| Error::new_spanned(item.tokens, TOO_MANY_BODIES_HINT))
+                .collect::<Vec<_>>();
 
-    match (first, second) {
-        (Some(_), Some(_)) => Err(IError::TooManyBodies(name.to_string())),
-        (Some(result), None) => Ok(result),
-        _ => Ok(BodyKind::None),
+            errors.into_result(|| Error::new_spanned(&method.sig, TOO_MANY_BODIES))
+        }
     }
 }
 
-fn parse_body_kind(ident: &Ident) -> Option<BodyKind> {
+fn parse_body_kind(ident: &Ident) -> Option<WithTokens<BodyKind, Ident>> {
     if ident == "body" {
-        Some(BodyKind::Body)
+        Some(WithTokens::new(BodyKind::Body, ident))
     } else if ident == "form" {
-        Some(BodyKind::Form)
+        Some(WithTokens::new(BodyKind::Form, ident))
     } else if ident == "json" {
-        Some(BodyKind::Json)
+        Some(WithTokens::new(BodyKind::Json, ident))
     } else {
         None
     }

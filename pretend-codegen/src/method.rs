@@ -9,11 +9,11 @@ use self::checks::{check_correct_receiver, check_no_generics};
 use self::headers::implement_headers;
 use self::query::implement_query;
 use self::request::get_request;
-use crate::errors::{IError, IResult};
+use crate::errors::UNSUPPORTED_TRAIT_ITEM;
 use crate::format::format;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{TraitItem, TraitItemMethod};
+use syn::{Error, Result, TraitItem, TraitItemMethod};
 
 pub(crate) enum BodyKind {
     None,
@@ -22,20 +22,20 @@ pub(crate) enum BodyKind {
     Json,
 }
 
-pub(crate) fn implement_trait_item(item: &TraitItem) -> IResult<TokenStream> {
+pub(crate) fn implement_trait_item(item: &TraitItem) -> Result<TokenStream> {
     match item {
         TraitItem::Method(method) => implement_method(method),
-        _ => Err(IError::UnsupportedTraitItem),
+        _ => Err(Error::new_spanned(item, UNSUPPORTED_TRAIT_ITEM)),
     }
 }
 
-fn implement_method(method: &TraitItemMethod) -> IResult<TokenStream> {
+fn implement_method(method: &TraitItemMethod) -> Result<TokenStream> {
     check_no_generics(method)?;
     check_correct_receiver(method)?;
 
     let query = implement_query(method);
     let body = implement_body(method)?;
-    let headers = implement_headers(method);
+    let headers = implement_headers(method)?;
 
     let sig = &method.sig;
     let (method, path) = get_request(method)?;

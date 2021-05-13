@@ -3,12 +3,12 @@ mod format;
 mod method;
 mod utils;
 
-use crate::errors::IResult;
+use crate::errors::{Report, CODEGEN_FAILURE};
 use crate::method::implement_trait_item;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::{parse_macro_input, ItemTrait};
+use syn::{parse_macro_input, Error, ItemTrait, Result};
 
 #[proc_macro_attribute]
 pub fn request(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -23,20 +23,19 @@ pub fn header(_attr: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn pretend(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let item = parse_macro_input!(item as ItemTrait);
-    let result = implement_pretend(item);
-    match result {
-        Ok(result) => result.into(),
-        Err(err) => panic!("{}", err),
-    }
+    implement_pretend(item)
+        .unwrap_or_else(Error::into_compile_error)
+        .into()
 }
 
-fn implement_pretend(item: ItemTrait) -> IResult<TokenStream2> {
-    let name = item.ident;
-    let items = item.items;
+fn implement_pretend(item: ItemTrait) -> Result<TokenStream2> {
+    let name = &item.ident;
+    let items = &item.items;
     let methods = items
         .iter()
         .map(implement_trait_item)
-        .collect::<IResult<Vec<_>>>()?;
+        .collect::<Report<_>>()
+        .into_result(|| Error::new_spanned(name, CODEGEN_FAILURE))?;
 
     let tokens = quote! {
         #[pretend::client::async_trait]

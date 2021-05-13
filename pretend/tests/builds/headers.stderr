@@ -1,0 +1,47 @@
+error: Failed to generate pretend implementation
+ --> $DIR/headers.rs:6:7
+  |
+6 | trait Test {
+  |       ^^^^
+
+error: Failed to generate method implementation
+ --> $DIR/headers.rs:7:5
+  |
+7 | /     #[request(method = "GET", path = "/get")]
+8 | |     #[header(value = "test")]
+9 | |     async fn test_1(&self) -> Result<()>;
+  | |_________________________________________^
+
+error: `#[header]` attribute must only have `name` and `value`
+ --> $DIR/headers.rs:8:5
+  |
+8 |     #[header(value = "test")]
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Failed to generate method implementation
+  --> $DIR/headers.rs:10:5
+   |
+10 | /     #[request(method = "GET", path = "/get")]
+11 | |     #[header(name = "X-Test")]
+12 | |     async fn test_2(&self) -> Result<()>;
+   | |_________________________________________^
+
+error: `#[header]` attribute must only have `name` and `value`
+  --> $DIR/headers.rs:11:5
+   |
+11 |     #[header(name = "X-Test")]
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: Failed to generate method implementation
+  --> $DIR/headers.rs:13:5
+   |
+13 | /     #[request(method = "GET", path = "/get")]
+14 | |     #[header(name = "X-Test", value = "test", other = "something")]
+15 | |     async fn test_3(&self) -> Result<()>;
+   | |_________________________________________^
+
+error: `#[header]` attribute must only have `name` and `value`
+  --> $DIR/headers.rs:14:5
+   |
+14 |     #[header(name = "X-Test", value = "test", other = "something")]
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
