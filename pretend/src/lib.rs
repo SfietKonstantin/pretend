@@ -237,7 +237,6 @@ pub use serde::{Deserialize, Serialize};
 pub use url;
 pub use url::Url;
 
-use crate::client::Client;
 use crate::resolver::{InvalidUrlResolver, ResolveUrl, UrlResolver};
 use serde::de::DeserializeOwned;
 
@@ -293,8 +292,7 @@ impl<T> Response<T> {
 /// See crate level documentation for more information
 pub struct Pretend<C, R>
 where
-    C: Client + Send + Sync,
-    R: ResolveUrl + Send + Sync,
+    R: ResolveUrl,
 {
     client: C,
     resolver: R,
@@ -302,8 +300,7 @@ where
 
 impl<C, R> Pretend<C, R>
 where
-    C: Client + Send + Sync,
-    R: ResolveUrl + Send + Sync,
+    R: ResolveUrl,
 {
     /// Constructor
     ///
@@ -325,7 +322,7 @@ where
     /// Set the URL resolver for this client.
     pub fn with_url_resolver<RR>(self, resolver: RR) -> Pretend<C, RR>
     where
-        RR: ResolveUrl + Send + Sync,
+        RR: ResolveUrl,
     {
         Pretend {
             client: self.client,
@@ -334,10 +331,7 @@ where
     }
 }
 
-impl<C> Pretend<C, InvalidUrlResolver>
-where
-    C: Client + Send + Sync,
-{
+impl<C> Pretend<C, InvalidUrlResolver> {
     /// Constructor
     ///
     /// This constructor takes a client implementation and

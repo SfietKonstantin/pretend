@@ -2,7 +2,7 @@
 
 //! Internal module used by the code generator
 
-use crate::client::{Bytes, Client, Method};
+use crate::client::{BlockingClient, Bytes, Client, Method, NonSendClient};
 use crate::{Error, HeaderMap, Json, JsonResult, Pretend, ResolveUrl, Response, Result};
 use http::header::{HeaderName, CONTENT_TYPE};
 use http::HeaderValue;
@@ -14,7 +14,7 @@ use url::Url;
 /// Request body
 pub enum Body<'a, T>
 where
-    T: Serialize + Send + Sync,
+    T: Serialize,
 {
     /// No body
     None,
@@ -29,16 +29,14 @@ where
 /// Helper for pretend code generator
 pub struct MacroSupport<'p, C, R>
 where
-    C: Client + Send + Sync,
-    R: ResolveUrl + Send + Sync,
+    R: ResolveUrl,
 {
     pretend: &'p Pretend<C, R>,
 }
 
 impl<'p, C, R> MacroSupport<'p, C, R>
 where
-    C: Client + Send + Sync,
-    R: ResolveUrl + Send + Sync,
+    R: ResolveUrl,
 {
     /// Constructor
     ///
@@ -63,15 +61,67 @@ where
         &'a self,
         method: Method,
         url: Url,
-        mut headers: HeaderMap,
+        headers: HeaderMap,
         body: Body<'a, T>,
     ) -> Result<Response<Bytes>>
     where
-        T: Serialize + Send + Sync,
+        C: Client,
+        T: Serialize,
     {
         let client = &self.pretend.client;
+        let (headers, body) = self.prepare_request(headers, body)?;
+        client.execute(method, url, headers, body).await
+    }
 
-        let (headers, body) = match body {
+    /// Execute a request on a non-Send client
+    ///
+    /// Execute a request from request components.
+    /// Serialize the body if needed.
+    pub async fn request_non_send<'a, T>(
+        &'a self,
+        method: Method,
+        url: Url,
+        headers: HeaderMap,
+        body: Body<'a, T>,
+    ) -> Result<Response<Bytes>>
+    where
+        C: NonSendClient,
+        T: Serialize,
+    {
+        let client = &self.pretend.client;
+        let (headers, body) = self.prepare_request(headers, body)?;
+        client.execute(method, url, headers, body).await
+    }
+
+    /// Execute a blocking request
+    ///
+    /// Execute a request from request components.
+    /// Serialize the body if needed.
+    pub fn request_blocking<'a, T>(
+        &'a self,
+        method: Method,
+        url: Url,
+        headers: HeaderMap,
+        body: Body<'a, T>,
+    ) -> Result<Response<Bytes>>
+    where
+        C: BlockingClient,
+        T: Serialize,
+    {
+        let client = &self.pretend.client;
+        let (headers, body) = self.prepare_request(headers, body)?;
+        client.execute(method, url, headers, body)
+    }
+
+    fn prepare_request<'a, T>(
+        &'a self,
+        mut headers: HeaderMap,
+        body: Body<'a, T>,
+    ) -> Result<(HeaderMap, Option<Bytes>)>
+    where
+        T: Serialize,
+    {
+        let result = match body {
             Body::None => (headers, None),
             Body::Raw(raw) => (headers, Some(raw)),
             Body::Form(form) => {
@@ -96,7 +146,7 @@ where
                 (headers, body)
             }
         };
-        client.execute(method, url, headers, body).await
+        Ok(result)
     }
 }
 

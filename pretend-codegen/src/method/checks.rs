@@ -1,5 +1,26 @@
-use crate::errors::{UNSUPPORTED_GENERICS, UNSUPPORTED_RECEIVER};
+use crate::errors::{MUST_ASYNC, MUST_NOT_ASYNC, UNSUPPORTED_GENERICS, UNSUPPORTED_RECEIVER};
+use crate::ClientKind;
 use syn::{Error, FnArg, Receiver, Result, Signature, TraitItemMethod};
+
+pub(crate) fn check_async(method: &TraitItemMethod, kind: &ClientKind) -> Result<()> {
+    let asyncness = &method.sig.asyncness;
+    match kind {
+        ClientKind::Futures | ClientKind::FuturesNoSend => {
+            if asyncness.is_some() {
+                Ok(())
+            } else {
+                Err(Error::new_spanned(&method.sig, MUST_ASYNC))
+            }
+        }
+        ClientKind::Blocking => {
+            if let Some(asyncness) = asyncness {
+                Err(Error::new_spanned(&asyncness, MUST_NOT_ASYNC))
+            } else {
+                Ok(())
+            }
+        }
+    }
+}
 
 pub(crate) fn check_no_generics(method: &TraitItemMethod) -> Result<()> {
     let sig = &method.sig;

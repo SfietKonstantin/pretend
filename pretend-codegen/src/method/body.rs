@@ -8,26 +8,18 @@ use syn::{Error, Result, TraitItemMethod};
 pub(crate) fn implement_body(method: &TraitItemMethod) -> Result<TokenStream> {
     let kind = get_body(method)?;
     let implem = match kind {
-        BodyKind::None => {
-            quote! {
-                let body = pretend::internal::Body::<()>::None;
-            }
-        }
-        BodyKind::Body => {
-            quote! {
-                let body = pretend::internal::Body::<()>::Raw(pretend::client::Bytes::from(body));
-            }
-        }
-        BodyKind::Form => {
-            quote! {
-                let body = pretend::internal::Body::Form(&form);
-            }
-        }
-        BodyKind::Json => {
-            quote! {
-                let body = pretend::internal::Body::Json(&json);
-            }
-        }
+        BodyKind::None => quote! {
+            let body = pretend::internal::Body::<()>::None;
+        },
+        BodyKind::Body => quote! {
+            let body = pretend::internal::Body::<()>::Raw(pretend::client::Bytes::from(body));
+        },
+        BodyKind::Form => quote! {
+            let body = pretend::internal::Body::Form(&form);
+        },
+        BodyKind::Json => quote! {
+            let body = pretend::internal::Body::Json(&json);
+        },
     };
     Ok(implem)
 }

@@ -1,10 +1,14 @@
 use std::iter::FromIterator;
 use syn::{Error, Result};
 
+pub(crate) const INVALID_CLIENT_KIND: &str =
+    "Expected `#[pretend]`, `#[pretend(blocking)]` or `#[pretend(non_send)]`";
 pub(crate) const CODEGEN_FAILURE: &str = "Failed to generate pretend implementation";
 pub(crate) const METHOD_FAILURE: &str = "Failed to generate method implementation";
 pub(crate) const UNSUPPORTED_TRAIT_ITEM: &str = "Only methods are supported";
 pub(crate) const UNSUPPORTED_GENERICS: &str = "Generics are not supported";
+pub(crate) const MUST_NOT_ASYNC: &str = "Function must not be async for blocking client";
+pub(crate) const MUST_ASYNC: &str = "Function must be async";
 pub(crate) const UNSUPPORTED_RECEIVER: &str = "Method must take `&self` as receiver";
 pub(crate) const MISSING_REQUEST: &str = "Method must have the `#[request]` attribute";
 pub(crate) const TOO_MANY_REQUESTS: &str = "Method must have the `#[request]` attribute only once";

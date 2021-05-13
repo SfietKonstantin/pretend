@@ -165,6 +165,7 @@ impl ServerRunner {
     }
 }
 
+#[allow(unused)]
 pub fn test<F>(f: F)
 where
     F: Future<Output = ()> + 'static,
@@ -174,6 +175,17 @@ where
     server.stop();
 }
 
+#[allow(unused)]
+pub fn test_sync<F>(f: F)
+where
+    F: FnOnce(),
+{
+    let server = ServerRunner::start();
+    f();
+    server.stop();
+}
+
+#[allow(unused)]
 fn run_future<F>(f: F)
 where
     F: Future<Output = ()> + 'static,
