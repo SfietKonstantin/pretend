@@ -11,6 +11,7 @@ use self::query::implement_query;
 use self::request::get_request;
 use crate::errors::UNSUPPORTED_TRAIT_ITEM;
 use crate::format::format;
+use crate::ClientKind;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
 use syn::{Error, Result, TraitItem, TraitItemMethod};
@@ -22,14 +23,14 @@ pub(crate) enum BodyKind {
     Json,
 }
 
-pub(crate) fn implement_trait_item(item: &TraitItem) -> Result<TokenStream> {
+pub(crate) fn implement_trait_item(item: &TraitItem, kind: &ClientKind) -> Result<TokenStream> {
     match item {
-        TraitItem::Method(method) => implement_method(method),
+        TraitItem::Method(method) => implement_method(method, kind),
         _ => Err(Error::new_spanned(item, UNSUPPORTED_TRAIT_ITEM)),
     }
 }
 
-fn implement_method(method: &TraitItemMethod) -> Result<TokenStream> {
+fn implement_method(method: &TraitItemMethod, kind: &ClientKind) -> Result<TokenStream> {
     check_no_generics(method)?;
     check_correct_receiver(method)?;
 
@@ -42,6 +43,18 @@ fn implement_method(method: &TraitItemMethod) -> Result<TokenStream> {
     let method = Ident::new(&method, Span::call_site());
     let path = format(path, "path");
 
+    let execute_request = match kind {
+        ClientKind::Async => quote! {
+            support.request(method, url, headers, body).await
+        },
+        ClientKind::AsyncLocal => quote! {
+            support.request_local(method, url, headers, body).await
+        },
+        ClientKind::Blocking => quote! {
+            support.request_blocking(method, url, headers, body)
+        },
+    };
+
     Ok(quote! {
         #sig {
             let method = pretend::client::Method::#method;
@@ -53,7 +66,7 @@ fn implement_method(method: &TraitItemMethod) -> Result<TokenStream> {
             let url = support.create_url(path)?;
             #query
 
-            let response = support.request(method, url, headers, body).await?;
+            let response = #execute_request ?;
             pretend::internal::IntoResponse::into_response(response)
         }
     })

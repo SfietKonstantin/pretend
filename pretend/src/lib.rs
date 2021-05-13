@@ -5,7 +5,7 @@
 //!
 //! Some features:
 //! - Declarative
-//! - Asynchronous-first implementations
+//! - Support Asynchronous and blocking requests
 //! - HTTP client agnostic
 //! - JSON support thanks to serde
 //!
@@ -182,12 +182,54 @@
 //! # }
 //! ```
 //!
-//! # Available clients
+//! # Blocking requests
 //!
-//! `pretend` can be used with
+//! When all methods in the `pretend`-annotated trait are async, `pretend` will generate
+//! an async implementation. To generate a blocking implementation, simply remove the `async`.
 //!
-//! - [`reqwest`](https://crates.io/crates/pretend-reqwest)
-//! - [`isahc`](https://crates.io/crates/pretend-isahc)
+//! Blocking implementations will need a blocking client implementation.
+//!
+//! ```rust
+//! use pretend::{pretend, request, Pretend, Result, Url};
+//! use pretend_reqwest::BlockingClient;
+//!
+//! #[pretend]
+//! trait HttpBin {
+//!     #[request(method = "POST", path = "/anything")]
+//!     fn post_anything(&self, body: &'static str) -> Result<String>;
+//! }
+//!
+//! # fn main() {
+//! let client = BlockingClient::default();
+//! let url = Url::parse("https://httpbin.org").unwrap();
+//! let pretend = Pretend::for_client(client).with_url(url);
+//! let response = pretend.post_anything("hello").unwrap();
+//! assert!(response.contains("hello"));
+//! # }
+//! ```
+//!
+//! # Non-Send implementation
+//!
+//! Today, Rust do not support futures in traits. `pretend` uses `async_trait` to workaround
+//! that limitation. By default, `async_trait` adds the `Send` bound to futures. This implies
+//! that `Pretend` itself is `Send` and `Sync`, and implies that the client implementation it uses
+//! is also `Send` and `Sync`.
+//!
+//!
+//! However, some clients are not thread-safe, and cannot be shared between threads. To use
+//! these clients with `Pretend`, you have toopt-out from the `Send` constraint on returned
+//! futures by using `#[pretend(?Send)]`. This is similar to what is done in [`async_trait`].
+//!
+//! [`async_trait`]: https://docs.rs/async-trait/latest/async_trait/
+//!
+//! Clients implementations that are not thread-safe are usually called "local clients".
+//!
+//! # Available client implementations
+//!
+//! `pretend` can be used with the following HTTP clients
+//!
+//! - [`reqwest`](https://crates.io/crates/pretend-reqwest) (async and blocking)
+//! - [`isahc`](https://crates.io/crates/pretend-isahc) (async)
 //!
 //! # Implementing a `pretend` HTTP client
 //!
@@ -237,7 +279,6 @@ pub use serde::{Deserialize, Serialize};
 pub use url;
 pub use url::Url;
 
-use crate::client::Client;
 use crate::resolver::{InvalidUrlResolver, ResolveUrl, UrlResolver};
 use serde::de::DeserializeOwned;
 
@@ -293,8 +334,7 @@ impl<T> Response<T> {
 /// See crate level documentation for more information
 pub struct Pretend<C, R>
 where
-    C: Client + Send + Sync,
-    R: ResolveUrl + Send + Sync,
+    R: ResolveUrl,
 {
     client: C,
     resolver: R,
@@ -302,8 +342,7 @@ where
 
 impl<C, R> Pretend<C, R>
 where
-    C: Client + Send + Sync,
-    R: ResolveUrl + Send + Sync,
+    R: ResolveUrl,
 {
     /// Constructor
     ///
@@ -325,7 +364,7 @@ where
     /// Set the URL resolver for this client.
     pub fn with_url_resolver<RR>(self, resolver: RR) -> Pretend<C, RR>
     where
-        RR: ResolveUrl + Send + Sync,
+        RR: ResolveUrl,
     {
         Pretend {
             client: self.client,
@@ -334,10 +373,7 @@ where
     }
 }
 
-impl<C> Pretend<C, InvalidUrlResolver>
-where
-    C: Client + Send + Sync,
-{
+impl<C> Pretend<C, InvalidUrlResolver> {
     /// Constructor
     ///
     /// This constructor takes a client implementation and

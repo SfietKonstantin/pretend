@@ -16,3 +16,7 @@ readme = "README.md"
 pretend = { path = "../pretend",  version = "0.1.0" }
 reqwest = { version = "0.11" }
 hyper = ">=0.14, <0.14.5" # Make socket2 compatible with Rust 1.44
+
+[features]
+default = []
+blocking = ["reqwest/blocking"]
