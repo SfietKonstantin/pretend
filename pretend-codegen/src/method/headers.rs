@@ -1,74 +1,43 @@
+use crate::errors::{Report, INVALID_HEADER, METHOD_FAILURE};
 use crate::format::format;
-use crate::utils::parse_name_value_attr;
+use crate::utils::{parse_name_value_2_attr, WithTokens};
 use proc_macro2::TokenStream;
 use quote::quote;
-use std::iter::FromIterator;
-use syn::{Attribute, TraitItemMethod};
+use syn::{Attribute, Error, Result, TraitItemMethod};
 
-pub(crate) fn implement_headers(method: &TraitItemMethod) -> TokenStream {
+pub(crate) fn implement_headers(method: &TraitItemMethod) -> Result<TokenStream> {
     let headers = method
         .attrs
         .iter()
-        .filter_map(parse_header_attr)
+        .filter_map(|attr| parse_name_value_2_attr(attr, "header", "name", "value"))
         .collect::<Vec<_>>();
 
-    if headers.is_empty() {
+    let implem = if headers.is_empty() {
         quote! {
             let headers = pretend::HeaderMap::new();
         }
     } else {
         let headers = headers
             .into_iter()
-            .map(|(name, value)| implement_header(name, value))
-            .collect::<Vec<_>>();
+            .map(implement_header_result)
+            .collect::<Report<_>>()
+            .into_result(|| Error::new_spanned(method, METHOD_FAILURE))?;
 
         quote! {
             let mut headers = pretend::HeaderMap::new();
             #(#headers)*
         }
-    }
+    };
+    Ok(implem)
 }
 
-fn parse_header_attr(attr: &Attribute) -> Option<(String, String)> {
-    let header = parse_name_value_attr("header", attr)?
-        .into_iter()
-        .collect::<Header>();
-    let (name, value) = header.into_header()?;
-    Some((name, value))
-}
-
-struct Header {
-    name: Option<String>,
-    value: Option<String>,
-}
-
-impl Header {
-    fn into_header(self) -> Option<(String, String)> {
-        Some((self.name?, self.value?))
-    }
-}
-
-impl FromIterator<(String, String)> for Header {
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = (String, String)>,
-    {
-        let mut header_name = None;
-        let mut header_value = None;
-
-        for (key, value) in iter {
-            match key.as_str() {
-                "name" => header_name = Some(value),
-                "value" => header_value = Some(value),
-                _ => {}
-            }
-        }
-
-        Header {
-            name: header_name,
-            value: header_value,
-        }
-    }
+fn implement_header_result(
+    item: WithTokens<Option<(String, String)>, Attribute>,
+) -> Result<TokenStream> {
+    let value = item.value;
+    let tokens = item.tokens;
+    let (name, value) = value.ok_or_else(|| Error::new_spanned(tokens, INVALID_HEADER))?;
+    Ok(implement_header(name, value))
 }
 
 fn implement_header(name: String, value: String) -> TokenStream {

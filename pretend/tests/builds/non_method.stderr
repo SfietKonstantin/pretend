@@ -1,0 +1,11 @@
+error: Failed to generate pretend implementation
+ --> $DIR/non_method.rs:4:7
+  |
+4 | trait Test {
+  |       ^^^^
+
+error: Only methods are supported
+ --> $DIR/non_method.rs:5:5
+  |
+5 |     type Item;
+  |     ^^^^^^^^^^

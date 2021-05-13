@@ -1497,7 +1497,6 @@ dependencies = [
  "quote",
  "regex",
  "syn",
- "thiserror",
 ]
 
 [[package]]
