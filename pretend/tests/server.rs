@@ -5,7 +5,6 @@ use actix_web::{delete, get, patch, post, put, App, HttpResponse, HttpServer, Re
 use pretend::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::future::Future;
 use std::io;
 use std::sync::mpsc::{channel, Sender};
 use std::thread::{spawn, JoinHandle};
@@ -26,29 +25,29 @@ pub struct ErrorData {
 const HELLO_WORLD: &str = "Hello World";
 const ERROR: &str = "Error";
 
-#[get("/get")]
-async fn get() -> impl Responder {
-    HELLO_WORLD
+#[get("/method")]
+async fn method_get() -> impl Responder {
+    "GET"
 }
 
-#[post("/post")]
-async fn post() -> impl Responder {
-    HELLO_WORLD
+#[post("/method")]
+async fn method_post() -> impl Responder {
+    "POST"
 }
 
-#[put("/put")]
-async fn put() -> impl Responder {
-    HELLO_WORLD
+#[put("/method")]
+async fn method_put() -> impl Responder {
+    "PUT"
 }
 
-#[patch("/patch")]
-async fn patch() -> impl Responder {
-    HELLO_WORLD
+#[patch("/method")]
+async fn method_patch() -> impl Responder {
+    "PATCH"
 }
 
-#[delete("/delete")]
-async fn delete() -> impl Responder {
-    HELLO_WORLD
+#[delete("/method")]
+async fn method_delete() -> impl Responder {
+    "DELETE"
 }
 
 #[get("/query")]
@@ -115,7 +114,7 @@ async fn headers(request: HttpRequest) -> impl Responder {
     Json(headers)
 }
 
-struct ServerRunner {
+pub struct ServerRunner {
     server: Server,
     handle: JoinHandle<io::Result<()>>,
 }
@@ -138,11 +137,11 @@ impl ServerRunner {
     async fn run_server(send: Sender<Server>) -> io::Result<()> {
         let supplier = || {
             App::new()
-                .service(get)
-                .service(post)
-                .service(put)
-                .service(patch)
-                .service(delete)
+                .service(method_get)
+                .service(method_post)
+                .service(method_put)
+                .service(method_patch)
+                .service(method_delete)
                 .service(query)
                 .service(headers)
                 .service(post_with_string)
@@ -167,20 +166,9 @@ impl ServerRunner {
 
 pub fn test<F>(f: F)
 where
-    F: Future<Output = ()> + 'static,
+    F: FnOnce(),
 {
     let server = ServerRunner::start();
-    run_future(f);
+    f();
     server.stop();
-}
-
-fn run_future<F>(f: F)
-where
-    F: Future<Output = ()> + 'static,
-{
-    let runtime = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .unwrap();
-    runtime.block_on(f);
 }
