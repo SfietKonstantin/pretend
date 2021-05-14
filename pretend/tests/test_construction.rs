@@ -1,3 +1,4 @@
+mod runtimes;
 mod server;
 
 use pretend::resolver::UrlResolver;
@@ -6,7 +7,7 @@ use pretend_reqwest::Client as RClient;
 
 #[pretend]
 trait TestApi {
-    #[request(method = "GET", path = "/get")]
+    #[request(method = "GET", path = "/method")]
     async fn get(&self) -> Result<String>;
 }
 
@@ -19,10 +20,12 @@ async fn pretend_with_only_client_cannot_be_used() {
 
 #[test]
 fn pretend_construct_with_client_and_resolver() {
-    server::test(async {
-        let url = Url::parse(server::URL).unwrap();
-        let client = Pretend::new(RClient::default(), UrlResolver::new(url));
-        let result = client.get().await;
-        assert!(result.is_ok());
+    server::test(|| {
+        runtimes::block_on(async {
+            let url = Url::parse(server::URL).unwrap();
+            let client = Pretend::new(RClient::default(), UrlResolver::new(url));
+            let result = client.get().await;
+            assert!(result.is_ok());
+        })
     })
 }

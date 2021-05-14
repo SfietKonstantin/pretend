@@ -1,10 +1,9 @@
+mod runtimes;
 mod server;
 
 use pretend::http::{HeaderValue, StatusCode};
-use pretend::resolver::UrlResolver;
 use pretend::{pretend, request, Error, Json, JsonResult, Pretend, Response, Result, Url};
-use pretend_reqwest::Client as RClient;
-use std::future::Future;
+use pretend_reqwest::Client;
 
 type TestDataResult = JsonResult<server::TestData, server::ErrorData>;
 
@@ -32,17 +31,10 @@ trait TestApi {
     async fn get_json_result_response(&self, status: i32) -> Result<Response<TestDataResult>>;
 }
 
-async fn execute_test<F, O>(check: F)
-where
-    F: Fn(Pretend<RClient, UrlResolver>) -> O + 'static,
-    O: Future<Output = ()> + 'static,
-{
+fn new_pretend() -> impl TestApi {
     let url = Url::parse(server::URL).unwrap();
-
-    let client = RClient::default();
-    let client = Pretend::for_client(client).with_url(url.clone());
-
-    check(client).await;
+    let client = Client::default();
+    Pretend::for_client(client).with_url(url)
 }
 
 fn get_err_status<T>(result: Result<T>) -> Option<u16> {
@@ -61,163 +53,155 @@ fn is_body_err<T>(result: Result<T>) -> bool {
 
 #[test]
 fn test_output() {
-    server::test(async {
-        test_status_unit().await;
-        test_status_unit_response().await;
-        test_status_text().await;
-        test_status_text_response().await;
-        test_status_bytes().await;
-        test_status_bytes_response().await;
-        test_status_json().await;
-        test_status_json_response().await;
-        test_status_json_result().await;
-        test_status_json_result_response().await;
+    server::test(|| {
+        runtimes::block_on(async {
+            test_status_unit().await;
+            test_status_unit_response().await;
+            test_status_text().await;
+            test_status_text_response().await;
+            test_status_bytes().await;
+            test_status_bytes_response().await;
+            test_status_json().await;
+            test_status_json_response().await;
+            test_status_json_result().await;
+            test_status_json_result_response().await;
+        })
     })
 }
 
 async fn test_status_unit() {
-    execute_test(|api| async move {
-        let result = api.get_unit(200).await.unwrap();
-        assert_eq!(result, ());
+    let api = new_pretend();
 
-        let result = api.get_unit(402).await;
-        assert_eq!(get_err_status(result), Some(402));
-    })
-    .await;
+    let result = api.get_unit(200).await.unwrap();
+    assert_eq!(result, ());
+
+    let result = api.get_unit(402).await;
+    assert_eq!(get_err_status(result), Some(402));
 }
 
 async fn test_status_unit_response() {
-    execute_test(|api| async move {
-        let expected_header = HeaderValue::from_str("yes").unwrap();
+    let api = new_pretend();
 
-        let result = api.get_unit_response(200).await.unwrap();
-        let header = result.headers().get("x-lovely").unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
-        assert_eq!(*header, expected_header);
-        assert_eq!(*result.body(), ());
+    let expected_header = HeaderValue::from_str("yes").unwrap();
 
-        let result = api.get_unit_response(402).await.unwrap();
-        let header = result.headers().get("x-lovely").unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(402).unwrap());
-        assert_eq!(*header, expected_header);
-        assert_eq!(*result.body(), ());
-    })
-    .await;
+    let result = api.get_unit_response(200).await.unwrap();
+    let header = result.headers().get("x-lovely").unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
+    assert_eq!(*header, expected_header);
+    assert_eq!(*result.body(), ());
+
+    let result = api.get_unit_response(402).await.unwrap();
+    let header = result.headers().get("x-lovely").unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(402).unwrap());
+    assert_eq!(*header, expected_header);
+    assert_eq!(*result.body(), ());
 }
 
 async fn test_status_text() {
-    execute_test(|api| async move {
-        let result = api.get_text(200).await.unwrap();
-        assert_eq!(result, "Hello World");
+    let api = new_pretend();
 
-        let result = api.get_text(402).await;
-        assert_eq!(get_err_status(result), Some(402));
-    })
-    .await;
+    let result = api.get_text(200).await.unwrap();
+    assert_eq!(result, "Hello World");
+
+    let result = api.get_text(402).await;
+    assert_eq!(get_err_status(result), Some(402));
 }
 
 async fn test_status_text_response() {
-    execute_test(|api| async move {
-        let result = api.get_text_response(200).await.unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
-        assert_eq!(result.body(), "Hello World");
+    let api = new_pretend();
 
-        let result = api.get_text_response(402).await.unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(402).unwrap());
-        assert_eq!(result.body(), "Error");
-    })
-    .await;
+    let result = api.get_text_response(200).await.unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
+    assert_eq!(result.body(), "Hello World");
+
+    let result = api.get_text_response(402).await.unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(402).unwrap());
+    assert_eq!(result.body(), "Error");
 }
 
 async fn test_status_bytes() {
-    execute_test(|api| async move {
-        let result = api.get_bytes(200).await.unwrap();
-        assert_eq!(String::from_utf8_lossy(&result), "Hello World");
+    let api = new_pretend();
 
-        let result = api.get_bytes(402).await;
-        assert_eq!(get_err_status(result), Some(402));
-    })
-    .await;
+    let result = api.get_bytes(200).await.unwrap();
+    assert_eq!(String::from_utf8_lossy(&result), "Hello World");
+
+    let result = api.get_bytes(402).await;
+    assert_eq!(get_err_status(result), Some(402));
 }
 
 async fn test_status_bytes_response() {
-    execute_test(|api| async move {
-        let result = api.get_bytes_response(200).await.unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
-        assert_eq!(String::from_utf8_lossy(&result.body()), "Hello World");
+    let api = new_pretend();
 
-        let result = api.get_bytes_response(402).await.unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(402).unwrap());
-        assert_eq!(String::from_utf8_lossy(&result.body()), "Error");
-    })
-    .await;
+    let result = api.get_bytes_response(200).await.unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
+    assert_eq!(String::from_utf8_lossy(&result.body()), "Hello World");
+
+    let result = api.get_bytes_response(402).await.unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(402).unwrap());
+    assert_eq!(String::from_utf8_lossy(&result.body()), "Error");
 }
 
 async fn test_status_json() {
-    execute_test(|api| async move {
-        let expected = server::TestData {
-            first: "Hello".to_string(),
-            second: 123,
-        };
-        let result = api.get_json(200).await.unwrap();
-        assert_eq!(result.value(), expected);
+    let api = new_pretend();
 
-        let result = api.get_json(402).await;
-        assert_eq!(get_err_status(result), Some(402));
-    })
-    .await;
+    let expected = server::TestData {
+        first: "Hello".to_string(),
+        second: 123,
+    };
+    let result = api.get_json(200).await.unwrap();
+    assert_eq!(result.value(), expected);
+
+    let result = api.get_json(402).await;
+    assert_eq!(get_err_status(result), Some(402));
 }
 
 async fn test_status_json_response() {
-    execute_test(|api| async move {
-        let expected = server::TestData {
-            first: "Hello".to_string(),
-            second: 123,
-        };
-        let result = api.get_json_response(200).await.unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
-        assert_eq!(result.into_body().value(), expected);
+    let api = new_pretend();
 
-        let result = api.get_json_response(402).await;
-        assert!(is_body_err(result));
-    })
-    .await;
+    let expected = server::TestData {
+        first: "Hello".to_string(),
+        second: 123,
+    };
+    let result = api.get_json_response(200).await.unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
+    assert_eq!(result.into_body().value(), expected);
+
+    let result = api.get_json_response(402).await;
+    assert!(is_body_err(result));
 }
 
 async fn test_status_json_result() {
-    execute_test(|api| async move {
-        let expected = server::TestData {
-            first: "Hello".to_string(),
-            second: 123,
-        };
-        let result = api.get_json_result(200).await.unwrap();
-        assert_eq!(result, JsonResult::Ok(expected));
+    let api = new_pretend();
 
-        let expected = server::ErrorData {
-            message: "Error".to_string(),
-        };
-        let result = api.get_json_result(402).await.unwrap();
-        assert_eq!(result, JsonResult::Err(expected));
-    })
-    .await;
+    let expected = server::TestData {
+        first: "Hello".to_string(),
+        second: 123,
+    };
+    let result = api.get_json_result(200).await.unwrap();
+    assert_eq!(result, JsonResult::Ok(expected));
+
+    let expected = server::ErrorData {
+        message: "Error".to_string(),
+    };
+    let result = api.get_json_result(402).await.unwrap();
+    assert_eq!(result, JsonResult::Err(expected));
 }
 
 async fn test_status_json_result_response() {
-    execute_test(|api| async move {
-        let expected = server::TestData {
-            first: "Hello".to_string(),
-            second: 123,
-        };
-        let result = api.get_json_result_response(200).await.unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
-        assert_eq!(result.into_body(), JsonResult::Ok(expected));
+    let api = new_pretend();
 
-        let expected = server::ErrorData {
-            message: "Error".to_string(),
-        };
-        let result = api.get_json_result_response(402).await.unwrap();
-        assert_eq!(*result.status(), StatusCode::from_u16(402).unwrap());
-        assert_eq!(result.into_body(), JsonResult::Err(expected));
-    })
-    .await;
+    let expected = server::TestData {
+        first: "Hello".to_string(),
+        second: 123,
+    };
+    let result = api.get_json_result_response(200).await.unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(200).unwrap());
+    assert_eq!(result.into_body(), JsonResult::Ok(expected));
+
+    let expected = server::ErrorData {
+        message: "Error".to_string(),
+    };
+    let result = api.get_json_result_response(402).await.unwrap();
+    assert_eq!(*result.status(), StatusCode::from_u16(402).unwrap());
+    assert_eq!(result.into_body(), JsonResult::Err(expected));
 }
