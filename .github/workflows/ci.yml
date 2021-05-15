@@ -33,8 +33,11 @@ jobs:
         with:
           profile: minimal
           toolchain: nightly
-          components: clippy
+          components: rustfmt, clippy
           default: true
+
+      - name: rustfmt
+        run: cargo fmt --all -- --check
 
       - name: Check Clippy lints
         uses: actions-rs/clippy-check@v1
