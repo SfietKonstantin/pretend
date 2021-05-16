@@ -1,8 +1,10 @@
 error: Failed to generate pretend implementation
- --> $DIR/requests.rs:6:7
+ --> $DIR/requests.rs:5:1
   |
-6 | trait Test {
-  |       ^^^^
+5 | #[pretend]
+  | ^^^^^^^^^^
+  |
+  = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: Method must have the `#[request]` attribute
  --> $DIR/requests.rs:7:5

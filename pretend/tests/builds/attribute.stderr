@@ -1,0 +1,15 @@
+error: Expected `#[pretend]` or `#[pretend(?Send)]`
+ --> $DIR/attribute.rs:5:1
+  |
+5 | #[pretend(local)]
+  | ^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: Expected `#[pretend]` or `#[pretend(?Send)]`
+  --> $DIR/attribute.rs:11:1
+   |
+11 | #[pretend(blocking)]
+   | ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)

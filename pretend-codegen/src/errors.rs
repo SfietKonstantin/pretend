@@ -3,6 +3,11 @@ use syn::{Error, Result};
 
 pub(crate) const CODEGEN_FAILURE: &str = "Failed to generate pretend implementation";
 pub(crate) const METHOD_FAILURE: &str = "Failed to generate method implementation";
+pub(crate) const INVALID_ATTR: &str = "Expected `#[pretend]` or `#[pretend(?Send)]`";
+pub(crate) const UNSUPPORTED_ATTR_SYNC: &str =
+    "`?Send` is not supported for blocking implementation";
+pub(crate) const INCONSISTENT_ASYNC: &str =
+    "Unable to deduce if this trait is async or not. Please declare at least one method and mark either all of them as async or none of them as async.";
 pub(crate) const UNSUPPORTED_TRAIT_ITEM: &str = "Only methods are supported";
 pub(crate) const UNSUPPORTED_GENERICS: &str = "Generics are not supported";
 pub(crate) const UNSUPPORTED_RECEIVER: &str = "Method must take `&self` as receiver";

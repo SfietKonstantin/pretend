@@ -1,8 +1,10 @@
 error: Failed to generate pretend implementation
- --> $DIR/non_method.rs:4:7
+ --> $DIR/non_method.rs:3:1
   |
-4 | trait Test {
-  |       ^^^^
+3 | #[pretend]
+  | ^^^^^^^^^^
+  |
+  = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: Only methods are supported
  --> $DIR/non_method.rs:5:5

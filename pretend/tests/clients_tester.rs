@@ -1,4 +1,4 @@
-use pretend::client::{Bytes, Client, Method};
+use pretend::client::{BlockingClient, Bytes, Client, LocalClient, Method};
 use pretend::http::HeaderValue;
 use pretend::{HeaderMap, Response, Result, Url};
 use std::collections::HashMap;
@@ -14,27 +14,57 @@ pub trait TestableClient {
     ) -> Result<Response<Bytes>>;
 }
 
-pub struct TokioTestableClient<C>
+impl<C> TestableClient for C
 where
-    C: Client,
+    C: BlockingClient,
 {
-    client: C,
+    fn execute(
+        &self,
+        method: Method,
+        url: Url,
+        headers: HeaderMap,
+        body: Option<Bytes>,
+    ) -> Result<Response<Bytes>> {
+        C::execute(self, method, url, headers, body)
+    }
+}
+
+pub struct TokioTestableClient {
+    client: Box<dyn Client>,
     runtime: Runtime,
 }
 
-impl<C> TokioTestableClient<C>
-where
-    C: Client,
-{
-    pub fn new(client: C, runtime: Runtime) -> Self {
+impl TokioTestableClient {
+    pub fn new(client: Box<dyn Client>, runtime: Runtime) -> Self {
         TokioTestableClient { client, runtime }
     }
 }
 
-impl<C> TestableClient for TokioTestableClient<C>
-where
-    C: Client,
-{
+impl TestableClient for TokioTestableClient {
+    fn execute(
+        &self,
+        method: Method,
+        url: Url,
+        headers: HeaderMap,
+        body: Option<Bytes>,
+    ) -> Result<Response<Bytes>> {
+        self.runtime
+            .block_on(async { self.client.execute(method, url, headers, body).await })
+    }
+}
+
+pub struct TokioTestableLocalClient {
+    client: Box<dyn LocalClient>,
+    runtime: Runtime,
+}
+
+impl TokioTestableLocalClient {
+    pub fn new(client: Box<dyn LocalClient>, runtime: Runtime) -> Self {
+        TokioTestableLocalClient { client, runtime }
+    }
+}
+
+impl TestableClient for TokioTestableLocalClient {
     fn execute(
         &self,
         method: Method,
