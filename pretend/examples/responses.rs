@@ -1,7 +1,6 @@
-use pretend::{
-    header, pretend, request, Deserialize, Json, JsonResult, Pretend, Response, Result, Url,
-};
-use pretend_reqwest::Client as RClient;
+use pretend::{header, pretend, request, Json, JsonResult, Pretend, Response, Result, Url};
+use pretend_reqwest::Client;
+use serde::Deserialize;
 
 // This example show how to receive various response types.
 // It uses the Github API (that returns JSON)
@@ -57,7 +56,7 @@ trait Github {
 
 fn create_pretend() -> impl Github {
     let url = Url::parse("https://api.github.com").unwrap();
-    Pretend::for_client(RClient::default()).with_url(url)
+    Pretend::for_client(Client::default()).with_url(url)
 }
 
 #[tokio::main]

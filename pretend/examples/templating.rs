@@ -1,5 +1,5 @@
 use pretend::{header, pretend, request, Pretend, Result, Url};
-use pretend_reqwest::Client as RClient;
+use pretend_reqwest::Client;
 
 // This example show how to use templating to customize paths and headers
 
@@ -20,7 +20,7 @@ trait HttpBin {
 
 fn create_pretend() -> impl HttpBin {
     let url = Url::parse("https://httpbin.org").unwrap();
-    Pretend::for_client(RClient::default()).with_url(url)
+    Pretend::for_client(Client::default()).with_url(url)
 }
 
 #[tokio::main]

@@ -3,7 +3,7 @@ mod server;
 
 use pretend::resolver::UrlResolver;
 use pretend::{pretend, request, Pretend, Result, Url};
-use pretend_reqwest::Client as RClient;
+use pretend_reqwest::Client;
 
 #[pretend]
 trait TestApi {
@@ -13,7 +13,7 @@ trait TestApi {
 
 #[tokio::test]
 async fn pretend_with_only_client_cannot_be_used() {
-    let client = Pretend::for_client(RClient::default());
+    let client = Pretend::for_client(Client::default());
     let result = client.get().await;
     assert!(result.is_err());
 }
@@ -23,7 +23,7 @@ fn pretend_construct_with_client_and_resolver() {
     server::test(|| {
         runtimes::block_on(async {
             let url = Url::parse(server::URL).unwrap();
-            let client = Pretend::new(RClient::default(), UrlResolver::new(url));
+            let client = Pretend::new(Client::default(), UrlResolver::new(url));
             let result = client.get().await;
             assert!(result.is_ok());
         })

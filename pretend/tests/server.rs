@@ -2,7 +2,7 @@ use actix_web::dev::Server;
 use actix_web::http::{HeaderName, HeaderValue, StatusCode};
 use actix_web::web::{Either, Form, HttpRequest, Json, Path, Query};
 use actix_web::{delete, get, patch, post, put, App, HttpResponse, HttpServer, Responder};
-use pretend::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::io;
