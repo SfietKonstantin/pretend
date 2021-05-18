@@ -3,8 +3,8 @@ mod server;
 
 use pretend::resolver::UrlResolver;
 use pretend::{pretend, request, Pretend, Result, Url};
-use pretend_reqwest::BlockingClient as RBlockingClient;
-use pretend_reqwest::Client as RClient;
+use pretend_reqwest::BlockingClient;
+use pretend_reqwest::Client;
 
 #[pretend(?Send)]
 trait TestApiLocal {
@@ -24,13 +24,13 @@ fn pretend_with_local_and_blocking() {
 
     server::test(|| {
         runtimes::block_on(async {
-            let client = Pretend::new(RClient::default(), UrlResolver::new(url.clone()));
+            let client = Pretend::new(Client::default(), UrlResolver::new(url.clone()));
             let result = TestApiLocal::get(&client).await;
             assert!(result.is_ok());
         });
 
         {
-            let client = Pretend::new(RBlockingClient::default(), UrlResolver::new(url.clone()));
+            let client = Pretend::new(BlockingClient::default(), UrlResolver::new(url.clone()));
             let result = TestApiBlocking::get(&client);
             assert!(result.is_ok());
         }

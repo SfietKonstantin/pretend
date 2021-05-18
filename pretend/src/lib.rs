@@ -77,7 +77,8 @@
 //! Query parameter is passed with the `query` parameter. It is also serialized using `serde`.
 //!
 //! ```rust
-//! use pretend::{pretend, request, Json, Result, Serialize};
+//! use pretend::{pretend, request, Json, Result};
+//! use serde::Serialize;
 //!
 //! #[derive(Serialize)]
 //! struct Data {
@@ -114,7 +115,8 @@
 //! types inside a [`Response`]. This also allows accessing response headers.
 //!
 //! ```rust
-//! use pretend::{pretend, request, Deserialize, Json, JsonResult, Response, Result};
+//! use pretend::{pretend, request, Json, JsonResult, Response, Result};
+//! use serde::Deserialize;
 //!
 //! #[derive(Deserialize)]
 //! struct Data {
@@ -152,8 +154,9 @@
 //! any type that implement `Display` is supported.
 //!
 //! ```rust
-//! use pretend::{header, pretend, request, Deserialize, Json, Pretend, Result};
+//! use pretend::{header, pretend, request, Json, Pretend, Result};
 //! use pretend_reqwest::Client;
+//! use serde::Deserialize;
 //! use std::collections::HashMap;
 //! # use pretend::Url;
 //!
@@ -275,7 +278,6 @@ pub use http;
 pub use http::{HeaderMap, StatusCode};
 pub use pretend_codegen::{header, pretend, request};
 pub use serde;
-pub use serde::{Deserialize, Serialize};
 pub use url;
 pub use url::Url;
 

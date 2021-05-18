@@ -1,5 +1,6 @@
-use pretend::{header, pretend, request, Pretend, Result, Serialize, Url};
-use pretend_reqwest::Client as RClient;
+use pretend::{header, pretend, request, Pretend, Result, Url};
+use pretend_reqwest::Client;
+use serde::Serialize;
 
 // This example show how to send various body types to https://httpbin.org
 
@@ -42,7 +43,7 @@ trait HttpBin {
 
 fn create_pretend() -> impl HttpBin {
     let url = Url::parse("https://httpbin.org").unwrap();
-    Pretend::for_client(RClient::default()).with_url(url)
+    Pretend::for_client(Client::default()).with_url(url)
 }
 
 #[tokio::main]
