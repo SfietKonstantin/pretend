@@ -33,6 +33,7 @@ pub fn pretend(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 fn implement_pretend(attr: PretendAttr, item: ItemTrait) -> Result<TokenStream2> {
     let name = &item.ident;
+    let vis = &item.vis;
     let items = &item.items;
     let kind = parse_client_kind(name, attr, items)?;
     let methods = items
@@ -46,7 +47,7 @@ fn implement_pretend(attr: PretendAttr, item: ItemTrait) -> Result<TokenStream2>
     let send_sync = send_sync_traits_impl(&kind);
     let tokens = quote! {
         #attr
-        trait #name {
+        #vis trait #name {
             #(#items)*
         }
 
