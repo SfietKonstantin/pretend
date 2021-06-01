@@ -260,7 +260,6 @@
 //!
 //! Here is a quick roadmap
 //!
-//! - Support more clients (awc)
 //! - Introduce more attributes to mark method parameters (body, json, params)
 //! - Introduce interceptors
 
