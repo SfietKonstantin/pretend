@@ -1,7 +1,7 @@
 [package]
 name = "pretend-awc"
 edition = "2018"
-version = "0.1.0"
+version = "0.2.0"
 description = "awc based client for pretend."
 authors = ["Lucien XU <sfietkonstantin@free.fr>"]
 license = "MIT"
@@ -13,5 +13,5 @@ categories = ["web-programming::http-client"]
 readme = "README.md"
 
 [dependencies]
-pretend = { path = "../pretend",  version = "0.1.0" }
+pretend = { path = "../pretend",  version = "0.2.0" }
 awc = "2.0"
