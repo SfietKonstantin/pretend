@@ -176,4 +176,4 @@ async fn main() {
 
 ## Documentation
 
-For more information, please refer to the API reference.
+For more information, please refer to the [API reference](https://docs.rs/pretend/latest/pretend/).

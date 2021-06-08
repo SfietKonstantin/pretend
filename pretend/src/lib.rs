@@ -233,6 +233,7 @@
 //!
 //! - [`reqwest`](https://crates.io/crates/pretend-reqwest) (async and blocking)
 //! - [`isahc`](https://crates.io/crates/pretend-isahc) (async)
+//! - [`awc`](https://crates.io/crates/pretend-awc) (local async)
 //!
 //! # Implementing a `pretend` HTTP client
 //!
