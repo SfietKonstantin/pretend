@@ -1,14 +1,26 @@
-error: Unable to deduce if this trait is async or not. Please declare at least one method and mark either all of them as async or none of them as async.
+error: Please declare at least one method for this trait
  --> $DIR/inconsistent_async.rs:6:7
   |
 6 | trait Test1 {}
   |       ^^^^^
 
-error: Unable to deduce if this trait is async or not. Please declare at least one method and mark either all of them as async or none of them as async.
+error: Unable to deduce if this trait is async or not. Please mark either all methods or none as async.
  --> $DIR/inconsistent_async.rs:9:7
   |
 9 | trait Test2 {
   |       ^^^^^
+
+error: async method defined here
+  --> $DIR/inconsistent_async.rs:13:5
+   |
+13 |     async fn test_2(&self) -> Result<()>;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: non-async method defined here
+  --> $DIR/inconsistent_async.rs:11:5
+   |
+11 |     fn test_1(&self) -> Result<()>;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: `?Send` is not supported for blocking implementation
   --> $DIR/inconsistent_async.rs:16:1

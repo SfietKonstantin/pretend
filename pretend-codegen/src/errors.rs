@@ -6,8 +6,11 @@ pub(crate) const METHOD_FAILURE: &str = "Failed to generate method implementatio
 pub(crate) const INVALID_ATTR: &str = "Expected `#[pretend]` or `#[pretend(?Send)]`";
 pub(crate) const UNSUPPORTED_ATTR_SYNC: &str =
     "`?Send` is not supported for blocking implementation";
+pub(crate) const NO_METHOD: &str = "Please declare at least one method for this trait";
 pub(crate) const INCONSISTENT_ASYNC: &str =
-    "Unable to deduce if this trait is async or not. Please declare at least one method and mark either all of them as async or none of them as async.";
+    "Unable to deduce if this trait is async or not. Please mark either all methods or none as async.";
+pub(crate) const INCONSISTENT_ASYNC_ASYNC_HINT: &str = "async method defined here";
+pub(crate) const INCONSISTENT_ASYNC_NON_ASYNC_HINT: &str = "non-async method defined here";
 pub(crate) const UNSUPPORTED_TRAIT_ITEM: &str = "Only methods are supported";
 pub(crate) const UNSUPPORTED_GENERICS: &str = "Generics are not supported";
 pub(crate) const UNSUPPORTED_RECEIVER: &str = "Method must take `&self` as receiver";
