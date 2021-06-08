@@ -1,4 +1,4 @@
-use pretend::{header, pretend, request, Pretend, Result, Url};
+use pretend::{pretend, Pretend, Result, Url};
 use pretend_reqwest::Client;
 
 // This example show how to send various headers to https://httpbin.org

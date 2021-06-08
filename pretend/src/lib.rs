@@ -16,7 +16,7 @@
 //! A REST API is described by annotating a trait:
 //!
 //! ```rust
-//! use pretend::{pretend, request, Result};
+//! use pretend::{pretend, Result};
 //!
 //! #[pretend]
 //! trait HttpBin {
@@ -34,7 +34,7 @@
 //! ```rust
 //! use pretend::{Pretend, Url};
 //! use pretend_reqwest::Client;
-//! # use pretend::{pretend, request, Result};
+//! # use pretend::{pretend, Result};
 //! # #[pretend]
 //! # trait HttpBin {
 //! #     #[request(method = "POST", path = "/anything")]
@@ -56,7 +56,7 @@
 //! Headers are provided as attributes using `header`.
 //!
 //! ```rust
-//! use pretend::{header, pretend, request, Result};
+//! use pretend::{pretend, Result};
 //!
 //! #[pretend]
 //! trait HttpBin {
@@ -77,7 +77,7 @@
 //! Query parameter is passed with the `query` parameter. It is also serialized using `serde`.
 //!
 //! ```rust
-//! use pretend::{pretend, request, Json, Result};
+//! use pretend::{pretend, Json, Result};
 //! use serde::Serialize;
 //!
 //! #[derive(Serialize)]
@@ -115,7 +115,7 @@
 //! types inside a [`Response`]. This also allows accessing response headers.
 //!
 //! ```rust
-//! use pretend::{pretend, request, Json, JsonResult, Response, Result};
+//! use pretend::{pretend, Json, JsonResult, Response, Result};
 //! use serde::Deserialize;
 //!
 //! #[derive(Deserialize)]
@@ -154,7 +154,7 @@
 //! any type that implement `Display` is supported.
 //!
 //! ```rust
-//! use pretend::{header, pretend, request, Json, Pretend, Result};
+//! use pretend::{pretend, Json, Pretend, Result};
 //! use pretend_reqwest::Client;
 //! use serde::Deserialize;
 //! use std::collections::HashMap;
@@ -193,7 +193,7 @@
 //! Blocking implementations will need a blocking client implementation.
 //!
 //! ```rust
-//! use pretend::{pretend, request, Pretend, Result, Url};
+//! use pretend::{pretend, Pretend, Result, Url};
 //! use pretend_reqwest::BlockingClient;
 //!
 //! #[pretend]
@@ -286,7 +286,7 @@ mod errors;
 pub use self::errors::{Error, Result};
 pub use http;
 pub use http::{HeaderMap, StatusCode};
-pub use pretend_codegen::{header, pretend, request};
+pub use pretend_codegen::pretend;
 pub use serde;
 pub use url;
 pub use url::Url;

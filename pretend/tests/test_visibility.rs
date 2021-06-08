@@ -7,7 +7,7 @@ use pretend::{Pretend, Url};
 use pretend_reqwest::Client as RClient;
 
 mod api {
-    use pretend::{pretend, request, Result};
+    use pretend::{pretend, Result};
 
     #[pretend]
     pub trait TestApi {

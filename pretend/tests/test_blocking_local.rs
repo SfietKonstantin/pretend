@@ -2,7 +2,7 @@ mod runtimes;
 mod server;
 
 use pretend::resolver::UrlResolver;
-use pretend::{pretend, request, Pretend, Result, Url};
+use pretend::{pretend, Pretend, Result, Url};
 use pretend_reqwest::BlockingClient;
 use pretend_reqwest::Client;
 

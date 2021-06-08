@@ -1,6 +1,7 @@
 use crate::errors::{Report, INVALID_HEADER, METHOD_FAILURE};
 use crate::format::format;
-use crate::utils::{parse_name_value_2_attr, WithTokens};
+use crate::method::parse_header_attr;
+use crate::utils::WithTokens;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Attribute, Error, Result, TraitItemMethod};
@@ -9,7 +10,7 @@ pub(crate) fn implement_headers(method: &TraitItemMethod) -> Result<TokenStream>
     let attrs = &method.attrs;
     let headers = attrs
         .iter()
-        .filter_map(|attr| parse_name_value_2_attr(attr, "header", "name", "value"))
+        .filter_map(parse_header_attr)
         .collect::<Vec<_>>();
 
     let implem = if headers.is_empty() {

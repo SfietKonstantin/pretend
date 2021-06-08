@@ -1,3 +1,4 @@
+mod attr;
 mod body;
 mod checks;
 mod headers;
@@ -14,7 +15,10 @@ use crate::format::format;
 use crate::ClientKind;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote;
-use syn::{Error, Result, TraitItem, TraitItemMethod};
+use std::mem;
+use syn::{Attribute, Error, Result, TraitItem, TraitItemMethod};
+
+pub(crate) use self::attr::{parse_header_attr, parse_request_attr};
 
 pub(crate) enum BodyKind {
     None,
@@ -23,11 +27,32 @@ pub(crate) enum BodyKind {
     Json,
 }
 
-pub(crate) fn implement_trait_item(item: &TraitItem, kind: &ClientKind) -> Result<TokenStream> {
+pub(crate) fn trait_item(item: &TraitItem) -> TraitItem {
+    match item {
+        TraitItem::Method(item) => {
+            let mut item = item.clone();
+            let attrs = mem::take(&mut item.attrs);
+            item.attrs = attrs
+                .into_iter()
+                .filter(|attr| !is_attribute(attr))
+                .collect();
+            TraitItem::Method(item)
+        }
+        _ => item.clone(),
+    }
+}
+
+pub(crate) fn trait_item_implem(item: &TraitItem, kind: &ClientKind) -> Result<TokenStream> {
     match item {
         TraitItem::Method(method) => implement_method(method, kind),
         _ => Err(Error::new_spanned(item, UNSUPPORTED_TRAIT_ITEM)),
     }
+}
+
+fn is_attribute(attr: &Attribute) -> bool {
+    let is_request = parse_request_attr(attr).is_some();
+    let is_header = parse_header_attr(attr).is_some();
+    is_request || is_header
 }
 
 fn implement_method(method: &TraitItemMethod, kind: &ClientKind) -> Result<TokenStream> {

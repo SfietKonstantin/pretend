@@ -9,22 +9,12 @@ use crate::errors::{
     ErrorsExt, Report, CODEGEN_FAILURE, INCONSISTENT_ASYNC, INCONSISTENT_ASYNC_ASYNC_HINT,
     INCONSISTENT_ASYNC_NON_ASYNC_HINT, NO_METHOD, UNSUPPORTED_ATTR_SYNC,
 };
-use crate::method::implement_trait_item;
+use crate::method::{trait_item, trait_item_implem};
 use crate::utils::WithTokens;
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 use quote::quote;
 use syn::{parse_macro_input, Error, ItemTrait, Result, Signature, TraitItem};
-
-#[proc_macro_attribute]
-pub fn request(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
-}
-
-#[proc_macro_attribute]
-pub fn header(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    item
-}
 
 #[proc_macro_attribute]
 pub fn pretend(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -39,10 +29,15 @@ fn implement_pretend(attr: PretendAttr, item: ItemTrait) -> Result<TokenStream2>
     let name = &item.ident;
     let vis = &item.vis;
     let items = &item.items;
+    let trait_items = items
+        .iter()
+        .map(|item| trait_item(item))
+        .collect::<Vec<_>>();
+
     let kind = parse_client_kind(name, attr, items)?;
     let methods = items
         .iter()
-        .map(|item| implement_trait_item(item, &kind))
+        .map(|item| trait_item_implem(item, &kind))
         .collect::<Report<_>>()
         .into_result(|| Error::new(Span::call_site(), CODEGEN_FAILURE))?;
 
@@ -52,7 +47,7 @@ fn implement_pretend(attr: PretendAttr, item: ItemTrait) -> Result<TokenStream2>
     let tokens = quote! {
         #attr
         #vis trait #name {
-            #(#items)*
+            #(#trait_items)*
         }
 
         #attr
