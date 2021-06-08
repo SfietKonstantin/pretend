@@ -1,4 +1,4 @@
-use pretend::{header, pretend, request, Json, JsonResult, Pretend, Response, Result, Url};
+use pretend::{pretend, Json, JsonResult, Pretend, Response, Result, Url};
 use pretend_reqwest::Client;
 use serde::Deserialize;
 

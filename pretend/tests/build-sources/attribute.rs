@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 
-use pretend::{pretend, request, Result};
+use pretend::{pretend, Result};
 
 #[pretend(local)]
 trait Test1 {

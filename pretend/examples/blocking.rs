@@ -1,4 +1,4 @@
-use pretend::{pretend, request, Pretend, Result, Url};
+use pretend::{pretend, Pretend, Result, Url};
 use pretend_reqwest::BlockingClient;
 
 // This example show how the use of a blocking client

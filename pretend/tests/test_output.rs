@@ -2,7 +2,7 @@ mod runtimes;
 mod server;
 
 use pretend::http::{HeaderValue, StatusCode};
-use pretend::{pretend, request, Error, Json, JsonResult, Pretend, Response, Result, Url};
+use pretend::{pretend, Error, Json, JsonResult, Pretend, Response, Result, Url};
 use pretend_reqwest::Client;
 
 type TestDataResult = JsonResult<server::TestData, server::ErrorData>;

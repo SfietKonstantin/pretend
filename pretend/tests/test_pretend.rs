@@ -1,7 +1,7 @@
 mod runtimes;
 mod server;
 
-use pretend::{header, pretend, request, Json, Pretend, Result, Url};
+use pretend::{pretend, Json, Pretend, Result, Url};
 use pretend_reqwest::Client;
 use std::collections::HashMap;
 
