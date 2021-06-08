@@ -51,10 +51,8 @@ impl LocalClient for Client {
         let status = response.status();
         let headers = response.headers();
         let headers = headers.iter().map(create_header).collect::<HeaderMap>();
-        let result = response
-            .body()
-            .await
-            .map_err(|err| Error::Body(Box::new(err)))?;
+        let future = response.body();
+        let result = future.await.map_err(|err| Error::Body(Box::new(err)))?;
         Ok(Response::new(status, headers, Bytes::from(result.to_vec())))
     }
 }

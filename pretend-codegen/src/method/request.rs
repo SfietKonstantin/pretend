@@ -6,7 +6,6 @@ use syn::{Error, Result, TraitItemMethod};
 
 pub(crate) fn get_request(method: &TraitItemMethod) -> Result<(String, String)> {
     let attrs = &method.attrs;
-
     let single = attrs
         .iter()
         .filter_map(|attr| parse_name_value_2_attr(attr, "request", "method", "path"))
