@@ -5,12 +5,16 @@ mod method;
 mod utils;
 
 use crate::attr::PretendAttr;
-use crate::errors::{Report, CODEGEN_FAILURE, INCONSISTENT_ASYNC, UNSUPPORTED_ATTR_SYNC};
+use crate::errors::{
+    ErrorsExt, Report, CODEGEN_FAILURE, INCONSISTENT_ASYNC, INCONSISTENT_ASYNC_ASYNC_HINT,
+    INCONSISTENT_ASYNC_NON_ASYNC_HINT, NO_METHOD, UNSUPPORTED_ATTR_SYNC,
+};
 use crate::method::implement_trait_item;
+use crate::utils::WithTokens;
 use proc_macro::TokenStream;
 use proc_macro2::{Ident, Span, TokenStream as TokenStream2};
 use quote::quote;
-use syn::{parse_macro_input, Error, ItemTrait, Result, TraitItem};
+use syn::{parse_macro_input, Error, ItemTrait, Result, Signature, TraitItem};
 
 #[proc_macro_attribute]
 pub fn request(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -70,8 +74,8 @@ enum ClientKind {
 
 fn parse_client_kind(name: &Ident, attr: PretendAttr, items: &[TraitItem]) -> Result<ClientKind> {
     let asyncs = items.iter().filter_map(is_method_async).collect::<Vec<_>>();
-    let is_async = asyncs.iter().all(|a| *a);
-    let is_not_async = asyncs.iter().all(|a| !*a);
+    let is_async = asyncs.iter().all(|item| item.value);
+    let is_not_async = asyncs.iter().all(|item| !item.value);
 
     match (is_async, is_not_async) {
         (true, false) => {
@@ -88,13 +92,33 @@ fn parse_client_kind(name: &Ident, attr: PretendAttr, items: &[TraitItem]) -> Re
                 Ok(ClientKind::Blocking)
             }
         }
-        _ => Err(Error::new_spanned(name, INCONSISTENT_ASYNC)),
+        _ => {
+            if asyncs.is_empty() {
+                Err(Error::new_spanned(name, NO_METHOD))
+            } else {
+                let async_hints = asyncs
+                    .iter()
+                    .filter(|item| item.value)
+                    .map(|item| Error::new_spanned(item.tokens, INCONSISTENT_ASYNC_ASYNC_HINT));
+
+                let non_async_hints = asyncs
+                    .iter()
+                    .filter(|item| !item.value)
+                    .map(|item| Error::new_spanned(item.tokens, INCONSISTENT_ASYNC_NON_ASYNC_HINT));
+
+                let errors = async_hints.chain(non_async_hints).collect::<Vec<_>>();
+                errors.into_result(|| Error::new_spanned(name, INCONSISTENT_ASYNC))
+            }
+        }
     }
 }
 
-fn is_method_async(item: &TraitItem) -> Option<bool> {
+fn is_method_async(item: &TraitItem) -> Option<WithTokens<bool, Signature>> {
     match item {
-        TraitItem::Method(method) => Some(method.sig.asyncness.is_some()),
+        TraitItem::Method(method) => {
+            let is_async = method.sig.asyncness.is_some();
+            Some(WithTokens::new(is_async, &method.sig))
+        }
         _ => None,
     }
 }
