@@ -3,7 +3,7 @@
 //! Feature `blocking` enables the blocking client.
 
 #![warn(missing_docs)]
-#![deny(unsafe_code)]
+#![forbid(unsafe_code)]
 
 #[cfg(feature = "blocking")]
 mod blocking;

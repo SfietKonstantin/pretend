@@ -1,7 +1,7 @@
 //! `awc` based `pretend` client
 
 #![warn(missing_docs)]
-#![deny(unsafe_code)]
+#![forbid(unsafe_code)]
 
 pub use awc;
 
