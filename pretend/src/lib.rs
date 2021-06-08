@@ -265,7 +265,7 @@
 //! - Introduce interceptors
 
 #![warn(missing_docs)]
-#![deny(unsafe_code)]
+#![forbid(unsafe_code)]
 
 pub mod client;
 pub mod internal;
