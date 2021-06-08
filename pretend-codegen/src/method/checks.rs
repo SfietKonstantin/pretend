@@ -24,8 +24,8 @@ fn check_no_where_clause(sig: &Signature) -> Result<()> {
 }
 
 pub(crate) fn check_correct_receiver(method: &TraitItemMethod) -> Result<()> {
-    let receiver = get_receiver(method)
-        .ok_or_else(|| Error::new_spanned(&method.sig, UNSUPPORTED_RECEIVER))?;
+    let receiver = get_receiver(method);
+    let receiver = receiver.ok_or_else(|| Error::new_spanned(&method.sig, UNSUPPORTED_RECEIVER))?;
     get_good_mutability(receiver).ok_or_else(|| Error::new_spanned(receiver, UNSUPPORTED_RECEIVER))
 }
 

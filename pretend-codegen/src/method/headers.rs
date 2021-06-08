@@ -6,8 +6,8 @@ use quote::quote;
 use syn::{Attribute, Error, Result, TraitItemMethod};
 
 pub(crate) fn implement_headers(method: &TraitItemMethod) -> Result<TokenStream> {
-    let headers = method
-        .attrs
+    let attrs = &method.attrs;
+    let headers = attrs
         .iter()
         .filter_map(|attr| parse_name_value_2_attr(attr, "header", "name", "value"))
         .collect::<Vec<_>>();

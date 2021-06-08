@@ -27,9 +27,7 @@ fn create_pretend() -> impl HttpBin {
 async fn main() {
     let pretend = create_pretend();
 
-    let result = pretend
-        .get("get", "Header", 1, 2, "something")
-        .await
-        .unwrap();
+    let future = pretend.get("get", "Header", 1, 2, "something");
+    let result = future.await.unwrap();
     println!("{}", result);
 }

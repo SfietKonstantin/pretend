@@ -48,9 +48,8 @@ where
     /// Create an url from the resolver and a path
     pub fn create_url(&self, path: &str) -> Result<Url> {
         let resolver = &self.pretend.resolver;
-        resolver
-            .resolve_url(path)
-            .map_err(|err| Error::Request(Box::new(err)))
+        let result = resolver.resolve_url(path);
+        result.map_err(|err| Error::Request(Box::new(err)))
     }
 
     /// Execute a request
@@ -125,10 +124,8 @@ where
             Body::None => (headers, None),
             Body::Raw(raw) => (headers, Some(raw)),
             Body::Form(form) => {
-                headers.insert(
-                    CONTENT_TYPE,
-                    HeaderValue::from_static("application/x-www-form-urlencoded"),
-                );
+                let content_type = HeaderValue::from_static("application/x-www-form-urlencoded");
+                headers.insert(CONTENT_TYPE, content_type);
 
                 let encoded = serde_urlencoded::to_string(form);
                 let encoded = encoded.map_err(|err| Error::Request(Box::new(err)))?;
@@ -137,7 +134,8 @@ where
                 (headers, body)
             }
             Body::Json(json) => {
-                headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+                let content_type = HeaderValue::from_static("application/json");
+                headers.insert(CONTENT_TYPE, content_type);
 
                 let encoded = serde_json::to_vec(json);
                 let encoded = encoded.map_err(|err| Error::Request(Box::new(err)))?;
@@ -158,9 +156,8 @@ where
     {
         let mut pairs = url.query_pairs_mut();
         let serializer = serde_urlencoded::Serializer::new(&mut pairs);
-        query
-            .serialize(serializer)
-            .map_err(|err| Error::Request(Box::new(err)))?;
+        let result = query.serialize(serializer);
+        result.map_err(|err| Error::Request(Box::new(err)))?;
     }
     Ok(url)
 }
@@ -218,9 +215,8 @@ impl IntoResponse<Response<String>> for Response<Bytes> {
 
 fn parse_string_body(response: &Response<Bytes>) -> String {
     // Taken from reqwest
-    let content_type = response
-        .headers
-        .get(CONTENT_TYPE)
+    let content_type = response.headers.get(CONTENT_TYPE);
+    let content_type = content_type
         .and_then(|value| value.to_str().ok())
         .and_then(|value| value.parse::<mime::Mime>().ok());
     let encoding_name = content_type
@@ -228,8 +224,8 @@ fn parse_string_body(response: &Response<Bytes>) -> String {
         .and_then(|mime| mime.get_param("charset").map(|charset| charset.as_str()))
         .unwrap_or("utf-8");
 
-    let encoding =
-        encoding_rs::Encoding::for_label(encoding_name.as_bytes()).unwrap_or(encoding_rs::UTF_8);
+    let encoding = encoding_rs::Encoding::for_label(encoding_name.as_bytes());
+    let encoding = encoding.unwrap_or(encoding_rs::UTF_8);
 
     let (text, _, _) = encoding.decode(&response.body);
     text.to_string()
