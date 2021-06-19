@@ -10,16 +10,16 @@ use thiserror::Error;
 pub enum Error {
     /// Error when creating a client implementation
     #[error("Failed to create client")]
-    Client(#[source] Box<dyn error::Error>),
+    Client(#[source] Box<dyn error::Error + Send + Sync>),
     /// Error when building the request
     #[error("Invalid request")]
-    Request(#[source] Box<dyn error::Error>),
+    Request(#[source] Box<dyn error::Error + Send + Sync>),
     /// Error when executing the request
     #[error("Failed to execute request")]
-    Response(#[source] Box<dyn error::Error>),
+    Response(#[source] Box<dyn error::Error + Send + Sync>),
     /// Error when parsing the response body
     #[error("Failed to read response body")]
-    Body(#[source] Box<dyn error::Error>),
+    Body(#[source] Box<dyn error::Error + Send + Sync>),
     /// HTTP status error
     ///
     /// This error is returned when the request failed with
