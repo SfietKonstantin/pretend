@@ -19,7 +19,7 @@ use reqwest::Client as RClient;
 use std::mem;
 
 /// `reqwest` based `pretend` client
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Client {
     client: RClient,
 }

@@ -285,6 +285,7 @@ use crate::resolver::{InvalidUrlResolver, ResolveUrl, UrlResolver};
 use serde::de::DeserializeOwned;
 
 /// Response type
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Response<T> {
     status: StatusCode,
     headers: HeaderMap,
@@ -334,6 +335,7 @@ impl<T> Response<T> {
 /// be implemented by this struct.
 ///
 /// See crate level documentation for more information
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Pretend<C, R>
 where
     R: ResolveUrl,
@@ -393,7 +395,7 @@ impl<C> Pretend<C, InvalidUrlResolver> {
 ///
 /// This wrapper type indicates that a method should return
 /// a JSON-serialized body.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Json<T>
 where
     T: DeserializeOwned,
@@ -428,7 +430,7 @@ where
 /// When the HTTP request is successful, the `Ok` variant will
 /// be returned, and when the HTTP request has failed, the
 /// `Err` variant will be returned.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum JsonResult<T, E>
 where
     T: DeserializeOwned,

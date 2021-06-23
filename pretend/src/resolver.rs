@@ -24,6 +24,7 @@ pub trait ResolveUrl {
 /// Default URL resolver
 ///
 /// This resolver appends the path to a base URL.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct UrlResolver {
     base: Url,
 }
@@ -48,6 +49,7 @@ impl ResolveUrl for UrlResolver {
 ///
 /// `[Pretend::with_url]` or `[Pretend::with_url_resolver]` should be used to
 /// set a valid URL resolver.
+#[derive(Clone, Copy, Debug)]
 pub struct InvalidUrlResolver;
 
 impl ResolveUrl for InvalidUrlResolver {
