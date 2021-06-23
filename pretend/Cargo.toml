@@ -30,6 +30,7 @@ actix-web = "3.3"
 pretend-awc = { path = "../pretend-awc" }
 pretend-isahc = { path = "../pretend-isahc" }
 pretend-reqwest = { path = "../pretend-reqwest", features = ["blocking"] }
+pretend-ureq = { path = "../pretend-ureq" }
 rustc_version = "0.2"
 tokio = { version = "1.5", features = ["macros", "rt-multi-thread"] }
 trybuild = "1.0"
