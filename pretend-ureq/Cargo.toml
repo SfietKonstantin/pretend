@@ -1,0 +1,17 @@
+[package]
+name = "pretend-ureq"
+edition = "2018"
+version = "0.2.1"
+description = "ureq based client for pretend."
+authors = ["Lucien XU <sfietkonstantin@free.fr>"]
+license = "MIT"
+homepage = "https://github.com/SfietKonstantin/pretend"
+documentation = "https://docs.rs/pretend-reqwest/latest/pretend_ureq/"
+repository = "https://github.com/SfietKonstantin/pretend"
+keywords = ["http", "client", "web", "async", "declarative"]
+categories = ["web-programming::http-client"]
+readme = "README.md"
+
+[dependencies]
+pretend = { path = "../pretend",  version = "0.2.0" }
+ureq = "2.1"

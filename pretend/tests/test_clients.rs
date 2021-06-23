@@ -10,6 +10,8 @@ use pretend::{HeaderMap, Response, Result, Url};
 use pretend_awc::Client as AClient;
 use pretend_isahc::Client as IClient;
 use pretend_reqwest::{BlockingClient as RBlockingClient, Client as RClient};
+use pretend_ureq::ureq::AgentBuilder;
+use pretend_ureq::Client as UClient;
 
 fn create_testable<C>(client: C) -> Box<dyn TestableClient>
 where
@@ -85,7 +87,10 @@ fn test_local_clients(url: Url) {
 }
 
 fn test_blocking_clients(url: Url) {
-    let clients: Vec<Box<dyn TestableClient>> = vec![Box::new(RBlockingClient::default())];
+    let clients: Vec<Box<dyn TestableClient>> = vec![
+        Box::new(RBlockingClient::default()),
+        Box::new(UClient::new(AgentBuilder::new().build())),
+    ];
     let tester = ClientsTester::new(url, clients);
     tester.test();
 }

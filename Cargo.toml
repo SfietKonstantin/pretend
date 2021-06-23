@@ -8,4 +8,5 @@ members = [
     "pretend-awc",
     "pretend-isahc",
     "pretend-reqwest",
+    "pretend-ureq",
 ]

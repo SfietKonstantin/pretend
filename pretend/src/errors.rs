@@ -23,7 +23,7 @@ pub enum Error {
     /// HTTP status error
     ///
     /// This error is returned when the request failed with
-    /// an HTTP error status. It is only return when methods
+    /// an HTTP error status. It is only returned when methods
     /// returns bodies.
     #[error("HTTP {0}")]
     Status(StatusCode),
