@@ -24,7 +24,7 @@ pub trait ResolveUrl {
 /// Default URL resolver
 ///
 /// This resolver appends the path to a base URL.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug)]
 pub struct UrlResolver {
     base: Url,
 }

@@ -335,7 +335,7 @@ impl<T> Response<T> {
 /// be implemented by this struct.
 ///
 /// See crate level documentation for more information
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug)]
 pub struct Pretend<C, R>
 where
     R: ResolveUrl,
