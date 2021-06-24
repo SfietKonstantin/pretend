@@ -12,6 +12,7 @@ use pretend::{Error, HeaderMap, Response, Result, Url};
 use std::mem;
 
 /// `ishac` based `pretend` client
+#[derive(Clone, Debug)]
 pub struct Client {
     client: HttpClient,
 }

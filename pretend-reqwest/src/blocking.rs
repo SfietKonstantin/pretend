@@ -4,7 +4,7 @@ use reqwest::blocking::Client;
 use std::mem;
 
 /// `reqwest` based `pretend` blocking client
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct BlockingClient {
     client: Client,
 }
