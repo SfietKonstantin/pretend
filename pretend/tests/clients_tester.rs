@@ -1,6 +1,8 @@
-use pretend::client::{BlockingClient, Bytes, Client, LocalClient, Method};
+use pretend::client::{BlockingClient, Bytes, Client, Method};
 use pretend::http::HeaderValue;
-use pretend::{HeaderMap, Response, Result, Url};
+use pretend::local::client::Client as LocalClient;
+use pretend::local::Result;
+use pretend::{HeaderMap, Response, Url};
 use std::collections::HashMap;
 use tokio::runtime::Runtime;
 
@@ -25,7 +27,8 @@ where
         headers: HeaderMap,
         body: Option<Bytes>,
     ) -> Result<Response<Bytes>> {
-        C::execute(self, method, url, headers, body)
+        let response = C::execute(self, method, url, headers, body)?;
+        Ok(response)
     }
 }
 
@@ -48,8 +51,11 @@ impl TestableClient for TokioTestableClient {
         headers: HeaderMap,
         body: Option<Bytes>,
     ) -> Result<Response<Bytes>> {
-        self.runtime
-            .block_on(async { self.client.execute(method, url, headers, body).await })
+        let future = async {
+            let response = self.client.execute(method, url, headers, body).await;
+            response.map_err(From::from)
+        };
+        self.runtime.block_on(future)
     }
 }
 
@@ -72,8 +78,8 @@ impl TestableClient for TokioTestableLocalClient {
         headers: HeaderMap,
         body: Option<Bytes>,
     ) -> Result<Response<Bytes>> {
-        self.runtime
-            .block_on(async { self.client.execute(method, url, headers, body).await })
+        let future = async { self.client.execute(method, url, headers, body).await };
+        self.runtime.block_on(future)
     }
 }
 

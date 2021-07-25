@@ -66,7 +66,7 @@ fn implement_method(method: &TraitItemMethod, kind: &ClientKind) -> Result<Token
             let url = support.create_url(path)?;
             #query
 
-            let response = #execute_request ?;
+            let response = #execute_request?;
             pretend::internal::IntoResponse::into_response(response)
         }
     })

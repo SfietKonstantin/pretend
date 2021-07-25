@@ -5,8 +5,10 @@ mod server;
 use clients_tester::{
     ClientsTester, TestableClient, TokioTestableClient, TokioTestableLocalClient,
 };
-use pretend::client::{Bytes, Client, LocalClient, Method};
-use pretend::{HeaderMap, Response, Result, Url};
+use pretend::client::{Bytes, Client, Method};
+use pretend::local::client::Client as LocalClient;
+use pretend::local::Result;
+use pretend::{HeaderMap, Response, Url};
 use pretend_awc::Client as AClient;
 use pretend_isahc::Client as IClient;
 use pretend_reqwest::{BlockingClient as RBlockingClient, Client as RClient};

@@ -39,21 +39,6 @@ pub trait Client {
     ) -> Result<Response<Bytes>>;
 }
 
-/// `pretend` local client
-///
-/// See module level documentation for more information.
-#[async_trait(?Send)]
-pub trait LocalClient {
-    /// Execute a request
-    async fn execute(
-        &self,
-        method: Method,
-        url: Url,
-        headers: HeaderMap,
-        body: Option<Bytes>,
-    ) -> Result<Response<Bytes>>;
-}
-
 /// `pretend` blocking client
 ///
 /// See module level documentation for more information.
@@ -66,23 +51,4 @@ pub trait BlockingClient {
         headers: HeaderMap,
         body: Option<Bytes>,
     ) -> Result<Response<Bytes>>;
-}
-
-/// `pretend` local client
-///
-/// See module level documentation for more information.
-#[async_trait(?Send)]
-impl<C> LocalClient for C
-where
-    C: Client,
-{
-    async fn execute(
-        &self,
-        method: Method,
-        url: Url,
-        headers: HeaderMap,
-        body: Option<Bytes>,
-    ) -> Result<Response<Bytes>> {
-        Client::execute(self, method, url, headers, body).await
-    }
 }

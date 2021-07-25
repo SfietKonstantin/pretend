@@ -1,6 +1,7 @@
 mod runtimes;
 mod server;
 
+use pretend::local::Result as LocalResult;
 use pretend::resolver::UrlResolver;
 use pretend::{pretend, request, Pretend, Result, Url};
 use pretend_reqwest::BlockingClient;
@@ -9,7 +10,7 @@ use pretend_reqwest::Client;
 #[pretend(?Send)]
 trait TestApiLocal {
     #[request(method = "GET", path = "/method")]
-    async fn get(&self) -> Result<String>;
+    async fn get(&self) -> LocalResult<String>;
 }
 
 #[pretend]

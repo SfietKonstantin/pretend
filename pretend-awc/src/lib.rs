@@ -7,9 +7,11 @@ pub use awc;
 
 use awc::http::{HeaderName, HeaderValue};
 use awc::Client as AClient;
-use pretend::client::{async_trait, Bytes, LocalClient, Method};
+use pretend::client::{async_trait, Bytes, Method};
 use pretend::http::header::{HeaderName as PHeaderName, HeaderValue as PHeaderValue};
-use pretend::{Error, HeaderMap, Response, Result, Url};
+use pretend::local::client::Client as PLClient;
+use pretend::local::{Error, Result};
+use pretend::{HeaderMap, Response, Url};
 
 /// `awc` based `pretend` client
 #[derive(Clone, Default)]
@@ -28,7 +30,7 @@ impl Client {
 }
 
 #[async_trait(?Send)]
-impl LocalClient for Client {
+impl PLClient for Client {
     async fn execute(
         &self,
         method: Method,

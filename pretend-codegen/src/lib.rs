@@ -141,7 +141,7 @@ fn client_implem(kind: &ClientKind) -> TokenStream2 {
             pretend::client::Client
         },
         ClientKind::AsyncLocal => quote! {
-            pretend::client::LocalClient
+            pretend::local::client::Client
         },
         ClientKind::Blocking => quote! {
             pretend::client::BlockingClient

@@ -264,11 +264,12 @@
 //! - Introduce more attributes to mark method parameters (body, json, params)
 //! - Introduce interceptors
 
-#![warn(missing_docs)]
+// #![warn(missing_docs)]
 #![forbid(unsafe_code)]
 
 pub mod client;
 pub mod internal;
+pub mod local;
 pub mod resolver;
 
 mod errors;

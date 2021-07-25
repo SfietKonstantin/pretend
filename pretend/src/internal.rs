@@ -2,7 +2,9 @@
 
 //! Internal module used by the code generator
 
-use crate::client::{BlockingClient, Bytes, Client, LocalClient, Method};
+use crate::client::{BlockingClient, Bytes, Client, Method};
+use crate::local::client::Client as LocalClient;
+use crate::local::Result as LocalResult;
 use crate::{Error, HeaderMap, Json, JsonResult, Pretend, ResolveUrl, Response, Result};
 use http::header::{HeaderName, CONTENT_TYPE};
 use http::HeaderValue;
@@ -82,7 +84,7 @@ where
         url: Url,
         headers: HeaderMap,
         body: Body<'a, T>,
-    ) -> Result<Response<Bytes>>
+    ) -> LocalResult<Response<Bytes>>
     where
         C: LocalClient,
         T: Serialize,
@@ -176,10 +178,10 @@ pub fn build_header(headers: &mut HeaderMap, name: &str, value: &str) -> Result<
 /// into a response. Implementations of these traits
 /// handle raw bytes, strings, JSON and responses
 pub trait IntoResponse<T> {
-    fn into_response(self) -> Result<T>;
+    fn into_response(self) -> T;
 }
 
-impl IntoResponse<()> for Response<Bytes> {
+impl IntoResponse<Result<()>> for Response<Bytes> {
     fn into_response(self) -> Result<()> {
         if self.status.is_success() {
             Ok(())
@@ -189,14 +191,14 @@ impl IntoResponse<()> for Response<Bytes> {
     }
 }
 
-impl IntoResponse<Response<()>> for Response<Bytes> {
+impl IntoResponse<Result<Response<()>>> for Response<Bytes> {
     fn into_response(self) -> Result<Response<()>> {
         let (status, headers, _) = self.into_parts();
         Ok(Response::new(status, headers, ()))
     }
 }
 
-impl IntoResponse<String> for Response<Bytes> {
+impl IntoResponse<Result<String>> for Response<Bytes> {
     fn into_response(self) -> Result<String> {
         if self.status.is_success() {
             Ok(parse_string_body(&self))
@@ -206,7 +208,7 @@ impl IntoResponse<String> for Response<Bytes> {
     }
 }
 
-impl IntoResponse<Response<String>> for Response<Bytes> {
+impl IntoResponse<Result<Response<String>>> for Response<Bytes> {
     fn into_response(self) -> Result<Response<String>> {
         let body = parse_string_body(&self);
         Ok(Response::new(self.status, self.headers, body))
@@ -231,7 +233,7 @@ fn parse_string_body(response: &Response<Bytes>) -> String {
     text.to_string()
 }
 
-impl IntoResponse<Vec<u8>> for Response<Bytes> {
+impl IntoResponse<Result<Vec<u8>>> for Response<Bytes> {
     fn into_response(self) -> Result<Vec<u8>> {
         if self.status.is_success() {
             Ok(self.body.to_vec())
@@ -241,13 +243,13 @@ impl IntoResponse<Vec<u8>> for Response<Bytes> {
     }
 }
 
-impl IntoResponse<Response<Vec<u8>>> for Response<Bytes> {
+impl IntoResponse<Result<Response<Vec<u8>>>> for Response<Bytes> {
     fn into_response(self) -> Result<Response<Vec<u8>>> {
         Ok(Response::new(self.status, self.headers, self.body.to_vec()))
     }
 }
 
-impl<T> IntoResponse<Json<T>> for Response<Bytes>
+impl<T> IntoResponse<Result<Json<T>>> for Response<Bytes>
 where
     T: DeserializeOwned,
 {
@@ -261,7 +263,7 @@ where
     }
 }
 
-impl<T> IntoResponse<Response<Json<T>>> for Response<Bytes>
+impl<T> IntoResponse<Result<Response<Json<T>>>> for Response<Bytes>
 where
     T: DeserializeOwned,
 {
@@ -272,7 +274,7 @@ where
     }
 }
 
-impl<T, E> IntoResponse<JsonResult<T, E>> for Response<Bytes>
+impl<T, E> IntoResponse<Result<JsonResult<T, E>>> for Response<Bytes>
 where
     T: DeserializeOwned,
     E: DeserializeOwned,
@@ -288,7 +290,7 @@ where
     }
 }
 
-impl<T, E> IntoResponse<Response<JsonResult<T, E>>> for Response<Bytes>
+impl<T, E> IntoResponse<Result<Response<JsonResult<T, E>>>> for Response<Bytes>
 where
     T: DeserializeOwned,
     E: DeserializeOwned,
@@ -317,4 +319,13 @@ where
     T: DeserializeOwned,
 {
     serde_json::from_slice(body.as_ref()).map_err(|err| Error::Body(Box::new(err)))
+}
+
+impl<T, V> IntoResponse<LocalResult<V>> for T
+where
+    T: IntoResponse<Result<V>>,
+{
+    fn into_response(self) -> LocalResult<V> {
+        T::into_response(self).map_err(From::from)
+    }
 }
