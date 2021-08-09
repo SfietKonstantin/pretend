@@ -4,7 +4,7 @@ error: Failed to generate pretend implementation
 5 | #[pretend]
   | ^^^^^^^^^^
   |
-  = note: this error originates in the attribute macro `pretend` (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: Failed to generate method implementation
  --> $DIR/headers.rs:7:5

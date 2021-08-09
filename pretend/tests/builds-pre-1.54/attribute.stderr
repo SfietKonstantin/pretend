@@ -4,7 +4,7 @@ error: Expected `#[pretend]` or `#[pretend(?Send)]`
 5 | #[pretend(local)]
   | ^^^^^^^^^^^^^^^^^
   |
-  = note: this error originates in the attribute macro `pretend` (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: Expected `#[pretend]` or `#[pretend(?Send)]`
   --> $DIR/attribute.rs:11:1
@@ -12,4 +12,4 @@ error: Expected `#[pretend]` or `#[pretend(?Send)]`
 11 | #[pretend(blocking)]
    | ^^^^^^^^^^^^^^^^^^^^
    |
-   = note: this error originates in the attribute macro `pretend` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
