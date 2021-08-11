@@ -1,0 +1,17 @@
+[package]
+name = "pretend-test-default-feature-build"
+version = "0.0.0"
+edition = "2018"
+
+[dependencies]
+pretend = { path = "../../pretend" }
+pretend-codegen = { path = "../../pretend-codegen" }
+pretend-isahc = { path = "../../pretend-isahc" }
+pretend-reqwest = { path = "../../pretend-reqwest" }
+pretend-ureq = { path = "../../pretend-ureq" }
+
+[dev-dependencies]
+thiserror = "1.0"
+trybuild = "1.0"
+
+[workspace]

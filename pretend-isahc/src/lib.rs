@@ -31,7 +31,7 @@ impl Client {
     /// This constructor creates a client implementation
     /// for `pretend` using a default `isahc` client.
     pub fn new() -> Result<Self> {
-        let client = HttpClient::new().map_err(|err| Error::Client(Box::new(err)))?;
+        let client = HttpClient::new().map_err(Error::client)?;
         Ok(Client { client })
     }
 }
@@ -57,15 +57,15 @@ impl PClient for Client {
             builder.body(AsyncBody::empty())
         };
 
-        let request = request.map_err(|err| Error::Request(Box::new(err)))?;
+        let request = request.map_err(Error::request)?;
         let response = self.client.send_async(request).await;
-        let mut response = response.map_err(|err| Error::Response(Box::new(err)))?;
+        let mut response = response.map_err(Error::response)?;
 
         let status = mem::take(response.status_mut());
         let headers = mem::take(response.headers_mut());
         let mut body = Vec::new();
         let result = response.copy_to(&mut body).await;
-        result.map_err(|err| Error::Body(Box::new(err)))?;
+        result.map_err(Error::body)?;
         Ok(Response::new(status, headers, Bytes::from(body)))
     }
 }

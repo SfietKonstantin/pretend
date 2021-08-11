@@ -49,7 +49,7 @@ where
     pub fn create_url(&self, path: &str) -> Result<Url> {
         let resolver = &self.pretend.resolver;
         let result = resolver.resolve_url(path);
-        result.map_err(|err| Error::Request(Box::new(err)))
+        result.map_err(Error::request)
     }
 
     /// Execute a request
@@ -128,7 +128,7 @@ where
                 headers.insert(CONTENT_TYPE, content_type);
 
                 let encoded = serde_urlencoded::to_string(form);
-                let encoded = encoded.map_err(|err| Error::Request(Box::new(err)))?;
+                let encoded = encoded.map_err(Error::request)?;
                 let body = Some(Bytes::from(encoded));
 
                 (headers, body)
@@ -138,7 +138,7 @@ where
                 headers.insert(CONTENT_TYPE, content_type);
 
                 let encoded = serde_json::to_vec(json);
-                let encoded = encoded.map_err(|err| Error::Request(Box::new(err)))?;
+                let encoded = encoded.map_err(Error::request)?;
                 let body = Some(Bytes::from(encoded));
 
                 (headers, body)
@@ -157,15 +157,15 @@ where
         let mut pairs = url.query_pairs_mut();
         let serializer = serde_urlencoded::Serializer::new(&mut pairs);
         let result = query.serialize(serializer);
-        result.map_err(|err| Error::Request(Box::new(err)))?;
+        result.map_err(Error::request)?;
     }
     Ok(url)
 }
 
 /// Append a component to a header
 pub fn build_header(headers: &mut HeaderMap, name: &str, value: &str) -> Result<()> {
-    let name = HeaderName::from_str(name).map_err(|err| Error::Request(Box::new(err)))?;
-    let value = HeaderValue::from_str(value).map_err(|err| Error::Request(Box::new(err)))?;
+    let name = HeaderName::from_str(name).map_err(Error::request)?;
+    let value = HeaderValue::from_str(value).map_err(Error::request)?;
     headers.append(name, value);
     Ok(())
 }
@@ -316,5 +316,5 @@ fn parse_json<T>(body: Bytes) -> Result<T>
 where
     T: DeserializeOwned,
 {
-    serde_json::from_slice(body.as_ref()).map_err(|err| Error::Body(Box::new(err)))
+    serde_json::from_slice(body.as_ref()).map_err(Error::body)
 }

@@ -17,10 +17,7 @@ fn create_testable<C>(client: C) -> Box<dyn TestableClient>
 where
     C: Client + 'static,
 {
-    Box::new(TokioTestableClient::new(
-        Box::new(client),
-        runtimes::create_runtime(),
-    ))
+    Box::new(TokioTestableClient::new(client, runtimes::create_runtime()))
 }
 
 fn create_testable_local<C>(client: C) -> Box<dyn TestableClient>
@@ -28,7 +25,7 @@ where
     C: LocalClient + 'static,
 {
     Box::new(TokioTestableLocalClient::new(
-        Box::new(client),
+        client,
         runtimes::create_runtime(),
     ))
 }
