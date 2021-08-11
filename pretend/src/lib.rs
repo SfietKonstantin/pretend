@@ -213,7 +213,7 @@
 //!
 //! # Non-Send implementation
 //!
-//! Today, Rust do not support futures in traits. `pretend` uses `async_trait` to workaround
+//! Today, Rust does not support futures in traits. `pretend` uses `async_trait` to workaround
 //! that limitation. By default, `async_trait` adds the `Send` bound to futures. This implies
 //! that `Pretend` itself is `Send` and `Sync`, and implies that the client implementation it uses
 //! is also `Send` and `Sync`.
@@ -227,14 +227,14 @@
 //!
 //! Clients implementations that are not thread-safe are usually called "local clients".
 //!
-//! # Non-Send-Sync errors
+//! # Non-Send errors
 //!
 //! `pretend` boxes errors returned by the client in [`Error`]. By default, it requires the error
 //! to be `Send + Sync`. For some clients, especially local ones, this bound cannot be guaranteed.
 //!
 //! `pretend` offers the feature `local-error` as an escape latch. When enabled, this feature will
 //! drop the `Send + Sync` bound on boxed errors. This feature is enabled by default for
-//! `pretend-awc`, a local client that returns non-Send-Sync errors.
+//! `pretend-awc`, a local client that returns non-Send errors.
 //!
 //! # Available client implementations
 //!
@@ -243,6 +243,7 @@
 //! - [`reqwest`](https://crates.io/crates/pretend-reqwest) (async and blocking)
 //! - [`isahc`](https://crates.io/crates/pretend-isahc) (async)
 //! - [`awc`](https://crates.io/crates/pretend-awc) (local async)
+//! - [`ureq`](https://crates.io/crates/pretend-ureq) (blocking)
 //!
 //! # Implementing a `pretend` HTTP client
 //!
