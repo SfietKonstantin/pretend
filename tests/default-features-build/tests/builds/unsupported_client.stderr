@@ -1,0 +1,35 @@
+error[E0277]: `Rc<i32>` cannot be sent between threads safely
+  --> $DIR/unsupported_client.rs:22:13
+   |
+22 |         Err(Error::response(TestError::default()))
+   |             ^^^^^^^^^^^^^^^ `Rc<i32>` cannot be sent between threads safely
+   |
+  ::: $PRETEND/src/errors.rs
+   |
+   |     error::Error + 'static + Send + Sync
+   |                              ---- required by this bound in `pretend::Error::response`
+   |
+   = help: within `TestError`, the trait `Send` is not implemented for `Rc<i32>`
+note: required because it appears within the type `TestError`
+  --> $DIR/unsupported_client.rs:8:8
+   |
+8  | struct TestError {
+   |        ^^^^^^^^^
+
+error[E0277]: `Rc<i32>` cannot be shared between threads safely
+  --> $DIR/unsupported_client.rs:22:13
+   |
+22 |         Err(Error::response(TestError::default()))
+   |             ^^^^^^^^^^^^^^^ `Rc<i32>` cannot be shared between threads safely
+   |
+  ::: $PRETEND/src/errors.rs
+   |
+   |     error::Error + 'static + Send + Sync
+   |                                     ---- required by this bound in `pretend::Error::response`
+   |
+   = help: within `TestError`, the trait `Sync` is not implemented for `Rc<i32>`
+note: required because it appears within the type `TestError`
+  --> $DIR/unsupported_client.rs:8:8
+   |
+8  | struct TestError {
+   |        ^^^^^^^^^

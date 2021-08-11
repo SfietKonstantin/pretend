@@ -220,12 +220,21 @@
 //!
 //!
 //! However, some clients are not thread-safe, and cannot be shared between threads. To use
-//! these clients with `Pretend`, you have toopt-out from the `Send` constraint on returned
+//! these clients with `Pretend`, you have to opt-out from the `Send` constraint on returned
 //! futures by using `#[pretend(?Send)]`. This is similar to what is done in [`async_trait`].
 //!
 //! [`async_trait`]: https://docs.rs/async-trait/latest/async_trait/
 //!
 //! Clients implementations that are not thread-safe are usually called "local clients".
+//!
+//! # Non-Send-Sync errors
+//!
+//! `pretend` boxes errors returned by the client in [`Error`]. By default, it requires the error
+//! to be `Send + Sync`. For some clients, especially local ones, this bound cannot be guaranteed.
+//!
+//! `pretend` offers the feature `local-error` as an escape latch. When enabled, this feature will
+//! drop the `Send + Sync` bound on boxed errors. This feature is enabled by default for
+//! `pretend-awc`, a local client that returns non-Send-Sync errors.
 //!
 //! # Available client implementations
 //!

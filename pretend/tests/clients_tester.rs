@@ -29,18 +29,27 @@ where
     }
 }
 
-pub struct TokioTestableClient {
-    client: Box<dyn Client>,
+pub struct TokioTestableClient<C>
+where
+    C: Client,
+{
+    client: C,
     runtime: Runtime,
 }
 
-impl TokioTestableClient {
-    pub fn new(client: Box<dyn Client>, runtime: Runtime) -> Self {
+impl<C> TokioTestableClient<C>
+where
+    C: Client,
+{
+    pub fn new(client: C, runtime: Runtime) -> Self {
         TokioTestableClient { client, runtime }
     }
 }
 
-impl TestableClient for TokioTestableClient {
+impl<C> TestableClient for TokioTestableClient<C>
+where
+    C: Client,
+{
     fn execute(
         &self,
         method: Method,
@@ -48,23 +57,32 @@ impl TestableClient for TokioTestableClient {
         headers: HeaderMap,
         body: Option<Bytes>,
     ) -> Result<Response<Bytes>> {
-        self.runtime
-            .block_on(async { self.client.execute(method, url, headers, body).await })
+        let future = async { self.client.execute(method, url, headers, body).await };
+        self.runtime.block_on(future)
     }
 }
 
-pub struct TokioTestableLocalClient {
-    client: Box<dyn LocalClient>,
+pub struct TokioTestableLocalClient<C>
+where
+    C: LocalClient,
+{
+    client: C,
     runtime: Runtime,
 }
 
-impl TokioTestableLocalClient {
-    pub fn new(client: Box<dyn LocalClient>, runtime: Runtime) -> Self {
+impl<C> TokioTestableLocalClient<C>
+where
+    C: LocalClient,
+{
+    pub fn new(client: C, runtime: Runtime) -> Self {
         TokioTestableLocalClient { client, runtime }
     }
 }
 
-impl TestableClient for TokioTestableLocalClient {
+impl<C> TestableClient for TokioTestableLocalClient<C>
+where
+    C: LocalClient,
+{
     fn execute(
         &self,
         method: Method,
@@ -72,8 +90,8 @@ impl TestableClient for TokioTestableLocalClient {
         headers: HeaderMap,
         body: Option<Bytes>,
     ) -> Result<Response<Bytes>> {
-        self.runtime
-            .block_on(async { self.client.execute(method, url, headers, body).await })
+        let future = async { self.client.execute(method, url, headers, body).await };
+        self.runtime.block_on(future)
     }
 }
 

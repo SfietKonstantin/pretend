@@ -47,12 +47,12 @@ impl LocalClient for Client {
             request.send()
         };
 
-        let mut response = future.await.map_err(|err| Error::Response(Box::new(err)))?;
+        let mut response = future.await.map_err(Error::response)?;
         let status = response.status();
         let headers = response.headers();
         let headers = headers.iter().map(create_header).collect::<HeaderMap>();
         let future = response.body();
-        let result = future.await.map_err(|err| Error::Body(Box::new(err)))?;
+        let result = future.await.map_err(Error::body)?;
         Ok(Response::new(status, headers, Bytes::from(result.to_vec())))
     }
 }

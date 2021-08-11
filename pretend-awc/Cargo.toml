@@ -13,5 +13,5 @@ categories = ["web-programming::http-client"]
 readme = "README.md"
 
 [dependencies]
-pretend = { path = "../pretend",  version = "0.2.0" }
+pretend = { path = "../pretend",  version = "0.2.0", features = ["local-error"] }
 awc = "2.0"

@@ -42,6 +42,19 @@ jobs:
 
       - run: cargo test
 
+  test-default-features-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          default: true
+
+      - run: cd tests/default-features-build && cargo test
+
   analyze:
     runs-on: ubuntu-latest
     steps:
@@ -66,7 +79,7 @@ jobs:
         uses: actions-rs/tarpaulin@v0.1
         with:
           version: "0.16.0"
-          args: "--exclude-files pretend/tests/*.rs --exclude-files pretend-codegen/*.rs --exclude-files pretend-codegen/method/*.rs"
+          args: "--exclude-files pretend/tests/*.rs --exclude-files pretend-codegen/*.rs --exclude-files pretend-codegen/method/*.rs --exclude-files tests/default-features-build/src/*.rs --exclude-files tests/default-features-build/tests/*.rs --exclude-files tests/default-features-build/tests/builds/*.rs"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
