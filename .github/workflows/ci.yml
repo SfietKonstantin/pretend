@@ -12,25 +12,15 @@ jobs:
           - ubuntu-latest
           - macos-latest
           - windows-latest
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: "1.44.0"
-          default: true
-
-      - run: cargo test
-
-  test-latest:
-    strategy:
-      matrix:
         toolchain:
           - stable
           - beta
-    runs-on: ubuntu-latest
+        exclude:
+          - os: macos-latest
+            toolchain: beta
+          - os: windows-latest
+            toolchain: beta
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
@@ -54,6 +44,19 @@ jobs:
           default: true
 
       - run: cd tests/default-features-build && cargo test
+
+  test-msrv-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: "1.44.0"
+          default: true
+
+      - run: cd tests/msrv-check && cargo build
 
   analyze:
     runs-on: ubuntu-latest
