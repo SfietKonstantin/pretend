@@ -14,4 +14,7 @@ readme = "README.md"
 
 [dependencies]
 pretend = { path = "../pretend",  version = "0.2.0" }
-isahc = "1.3"
+isahc = { version = "1", default-features = false }
+
+[features]
+default = ["isahc/default"]

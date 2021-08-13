@@ -6,12 +6,15 @@ description = "ureq based client for pretend."
 authors = ["Lucien XU <sfietkonstantin@free.fr>"]
 license = "MIT"
 homepage = "https://github.com/SfietKonstantin/pretend"
-documentation = "https://docs.rs/pretend-reqwest/latest/pretend_ureq/"
+documentation = "https://docs.rs/pretend-ureq/latest/pretend_ureq/"
 repository = "https://github.com/SfietKonstantin/pretend"
-keywords = ["http", "client", "web", "async", "declarative"]
+keywords = ["http", "client", "web", "declarative"]
 categories = ["web-programming::http-client"]
 readme = "README.md"
 
 [dependencies]
 pretend = { path = "../pretend",  version = "0.2.0" }
-ureq = "2.1"
+ureq = { version = "2", default-features = false }
+
+[features]
+default = ["ureq/default"]

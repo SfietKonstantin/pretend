@@ -245,6 +245,34 @@
 //! - [`awc`](https://crates.io/crates/pretend-awc) (local async)
 //! - [`ureq`](https://crates.io/crates/pretend-ureq) (blocking)
 //!
+//! These client implementations depends on the latest major release of each HTTP client at
+//! time of the release. The `default` feature for each of the HTTP client crate is also mapped
+//! to the `pretend-*` crate. To enable HTTP client features, you should add it as a dependency
+//! and enable them here. If needed, you can play with the `default-features` option on the
+//! `pretend-*` crate.
+//!
+//! The following snippet will enable `reqwest` default features
+//!
+//! ```toml
+//! [dependencies]
+//! pretend-reqwest = "0.2.2"
+//! ```
+//!
+//! In the following snippet, no feature of `reqwest` will be enabled
+//!
+//! ```toml
+//! [dependencies]
+//! pretend-reqwest = { version = "0.2.2", default-features = false }
+//! ```
+//!
+//! To use `reqwest` with rustls instead of the native-tls, you can do the following:
+//!
+//! ```toml
+//! [dependencies]
+//! pretend-reqwest = { version = "0.2.2", default-features = false }
+//! reqwest = { version = "*", default-features = false, features = ["rustls-tls"] }
+//! ```
+//!
 //! # Implementing a `pretend` HTTP client
 //!
 //! `pretend` clients wraps HTTP clients from other crates. They allow [`Pretend`] to execute

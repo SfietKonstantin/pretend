@@ -5,3 +5,6 @@
 //! to verify that they effectively supports these bounds. It also compiles a test
 //! client with an error that does not support these bounds, to make sure that it
 //! fails to compile.
+//!
+//! It also test if, by default, pretend-* crates are compiled without any feature
+//! in the client crate.
