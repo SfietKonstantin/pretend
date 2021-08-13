@@ -27,6 +27,7 @@ url = "2.2"
 
 [dev-dependencies]
 actix-web = "3.3"
+bitflags = ">=1.2.0, <1.3.0" # Compatibility with Rust 1.44
 pretend-awc = { path = "../pretend-awc" }
 pretend-isahc = { path = "../pretend-isahc" }
 pretend-reqwest = { path = "../pretend-reqwest", features = ["blocking"] }
