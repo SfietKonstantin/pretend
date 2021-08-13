@@ -14,8 +14,8 @@ readme = "README.md"
 
 [dependencies]
 pretend = { path = "../pretend",  version = "0.2.0" }
-reqwest = { version = "0.11" }
+reqwest = { version = "0.11", default-features = false }
 
 [features]
-default = []
+default = ["reqwest/default"]
 blocking = ["reqwest/blocking"]

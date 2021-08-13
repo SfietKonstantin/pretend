@@ -6,7 +6,7 @@ description = "awc based client for pretend."
 authors = ["Lucien XU <sfietkonstantin@free.fr>"]
 license = "MIT"
 homepage = "https://github.com/SfietKonstantin/pretend"
-documentation = "https://docs.rs/pretend-isahc/latest/pretend_awc/"
+documentation = "https://docs.rs/pretend-awc/latest/pretend_awc/"
 repository = "https://github.com/SfietKonstantin/pretend"
 keywords = ["http", "client", "web", "async", "declarative"]
 categories = ["web-programming::http-client"]
@@ -14,4 +14,7 @@ readme = "README.md"
 
 [dependencies]
 pretend = { path = "../pretend",  version = "0.2.0", features = ["local-error"] }
-awc = "2.0"
+awc = { version = "2", default-features = false }
+
+[features]
+default = ["awc/default"]

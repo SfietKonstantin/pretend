@@ -7,12 +7,14 @@ edition = "2018"
 pretend = { path = "../../pretend" }
 pretend-codegen = { path = "../../pretend-codegen" }
 
-pretend-isahc = { path = "../../pretend-isahc" }
-pretend-reqwest = { path = "../../pretend-reqwest" }
-pretend-ureq = { path = "../../pretend-ureq" }
+pretend-isahc = { path = "../../pretend-isahc", default-features = false }
+pretend-reqwest = { path = "../../pretend-reqwest", default-features = false }
+pretend-ureq = { path = "../../pretend-ureq", default-features = false }
 
 [dev-dependencies]
+anyhow = "1.0"
 thiserror = "1.0"
+tokio = { version = "1.5", features = ["macros", "rt-multi-thread"] }
 trybuild = "1.0"
 
 [workspace]
