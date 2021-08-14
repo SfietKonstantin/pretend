@@ -1,4 +1,4 @@
-use pretend::{pretend, request, Pretend, Result, Url};
+use pretend::{pretend, Pretend, Result, Url};
 
 #[pretend]
 trait HttpBin {
