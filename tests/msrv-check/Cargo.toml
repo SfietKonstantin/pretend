@@ -8,13 +8,26 @@ pretend = { path = "../../pretend" }
 pretend-codegen = { path = "../../pretend-codegen" }
 
 pretend-awc = { path = "../../pretend-awc" }
-pretend-isahc = { path = "../../pretend-isahc" }
-pretend-reqwest = { path = "../../pretend-reqwest" }
-pretend-ureq = { path = "../../pretend-ureq" }
+pretend-isahc = { path = "../../pretend-isahc", default-features = false }
+pretend-reqwest = { path = "../../pretend-reqwest", default-features = false }
+pretend-ureq = { path = "../../pretend-ureq", default-features = false }
 
 # Enforce MSRV
-bitflags = ">=1.2, <1.3.0"
-hyper = ">=0.14, <0.14.5"
-isahc = ">=1.3, <1.4.0"
+bitflags = "=1.2.1"
+futures-task = "=0.3.11"
+h2 = "=0.3.12"
+http = "=0.2.4"
+hyper = "=0.14.4"
+indexmap = "=1.5.2"
+ipnet = "=2.5.1"
+isahc = "=1.3.1"
+libz-sys = "=1.0.27"
+linked-hash-map = "=0.5.4"
+once_cell = "=1.14.0"
+openssl-sys = "=0.9.70"
+polling = "=2.5.1"
+tokio = "=1.14.1"
+ureq = "=2.2.0"
+url = "=2.2.2"
 
 [workspace]

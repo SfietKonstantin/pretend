@@ -29,10 +29,7 @@ fn implement_pretend(attr: PretendAttr, item: ItemTrait) -> Result<TokenStream2>
     let name = &item.ident;
     let vis = &item.vis;
     let items = &item.items;
-    let trait_items = items
-        .iter()
-        .map(|item| trait_item(item))
-        .collect::<Vec<_>>();
+    let trait_items = items.iter().map(trait_item).collect::<Vec<_>>();
 
     let kind = parse_client_kind(name, attr, items)?;
     let methods = items

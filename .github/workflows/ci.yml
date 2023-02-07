@@ -1,7 +1,7 @@
 name: Continuous integration
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
 
 jobs:
@@ -57,6 +57,8 @@ jobs:
           default: true
 
       - run: cd tests/msrv-check && cargo build
+        env:
+          CARGO_NET_GIT_FETCH_WITH_CLI: 'true'
 
   analyze:
     runs-on: ubuntu-latest

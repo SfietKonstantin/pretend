@@ -1,3 +1,5 @@
 target
 .idea
 Cargo.lock
+!tests/default-features-build/Cargo.lock
+!tests/msrv-check/Cargo.lock

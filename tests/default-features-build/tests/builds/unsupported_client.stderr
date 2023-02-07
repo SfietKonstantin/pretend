@@ -1,13 +1,10 @@
 error[E0277]: `Rc<i32>` cannot be sent between threads safely
-  --> $DIR/unsupported_client.rs:22:13
+  --> $DIR/unsupported_client.rs:22:29
    |
 22 |         Err(Error::response(TestError::default()))
-   |             ^^^^^^^^^^^^^^^ `Rc<i32>` cannot be sent between threads safely
-   |
-  ::: $PRETEND/src/errors.rs
-   |
-   |     error::Error + 'static + Send + Sync
-   |                              ---- required by this bound in `pretend::Error::response`
+   |             --------------- ^^^^^^^^^^^^^^^^^^^^ `Rc<i32>` cannot be sent between threads safely
+   |             |
+   |             required by a bound introduced by this call
    |
    = help: within `TestError`, the trait `Send` is not implemented for `Rc<i32>`
 note: required because it appears within the type `TestError`
@@ -15,17 +12,19 @@ note: required because it appears within the type `TestError`
    |
 8  | struct TestError {
    |        ^^^^^^^^^
+note: required by a bound in `pretend::Error::response`
+  --> $DIR/errors.rs:73:30
+   |
+73 |     error::Error + 'static + Send + Sync
+   |                              ^^^^ required by this bound in `pretend::Error::response`
 
 error[E0277]: `Rc<i32>` cannot be shared between threads safely
-  --> $DIR/unsupported_client.rs:22:13
+  --> $DIR/unsupported_client.rs:22:29
    |
 22 |         Err(Error::response(TestError::default()))
-   |             ^^^^^^^^^^^^^^^ `Rc<i32>` cannot be shared between threads safely
-   |
-  ::: $PRETEND/src/errors.rs
-   |
-   |     error::Error + 'static + Send + Sync
-   |                                     ---- required by this bound in `pretend::Error::response`
+   |             --------------- ^^^^^^^^^^^^^^^^^^^^ `Rc<i32>` cannot be shared between threads safely
+   |             |
+   |             required by a bound introduced by this call
    |
    = help: within `TestError`, the trait `Sync` is not implemented for `Rc<i32>`
 note: required because it appears within the type `TestError`
@@ -33,3 +32,8 @@ note: required because it appears within the type `TestError`
    |
 8  | struct TestError {
    |        ^^^^^^^^^
+note: required by a bound in `pretend::Error::response`
+  --> $DIR/errors.rs:73:37
+   |
+73 |     error::Error + 'static + Send + Sync
+   |                                     ^^^^ required by this bound in `pretend::Error::response`
