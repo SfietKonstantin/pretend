@@ -16,5 +16,6 @@ anyhow = "1.0"
 thiserror = "1.0"
 tokio = { version = "1.5", features = ["macros", "rt-multi-thread"] }
 trybuild = "1.0"
+ureq = { version = "=2.1.1", default-features = false }
 
 [workspace]
