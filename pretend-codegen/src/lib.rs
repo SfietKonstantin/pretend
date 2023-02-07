@@ -48,9 +48,10 @@ fn implement_pretend(attr: PretendAttr, item: ItemTrait) -> Result<TokenStream2>
         }
 
         #attr
-        impl<C, R> #name for pretend::Pretend<C, R>
+        impl<C, R, I> #name for pretend::Pretend<C, R, I>
             where C: #client #send_sync,
-                  R: pretend::resolver::ResolveUrl #send_sync
+                  R: pretend::resolver::ResolveUrl #send_sync,
+                  I: pretend::interceptor::InterceptRequest #send_sync,
         {
             #(#methods)*
         }

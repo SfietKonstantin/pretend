@@ -3,7 +3,9 @@
 //! Internal module used by the code generator
 
 use crate::client::{BlockingClient, Bytes, Client, LocalClient, Method};
-use crate::{Error, HeaderMap, Json, JsonResult, Pretend, ResolveUrl, Response, Result};
+use crate::interceptor::{InterceptRequest, Request};
+use crate::resolver::ResolveUrl;
+use crate::{Error, HeaderMap, Json, JsonResult, Pretend, Response, Result};
 use http::header::{HeaderName, CONTENT_TYPE};
 use http::HeaderValue;
 use serde::de::DeserializeOwned;
@@ -27,21 +29,23 @@ where
 }
 
 /// Helper for pretend code generator
-pub struct MacroSupport<'p, C, R>
+pub struct MacroSupport<'p, C, R, I>
 where
     R: ResolveUrl,
+    I: InterceptRequest,
 {
-    pretend: &'p Pretend<C, R>,
+    pretend: &'p Pretend<C, R, I>,
 }
 
-impl<'p, C, R> MacroSupport<'p, C, R>
+impl<'p, C, R, I> MacroSupport<'p, C, R, I>
 where
     R: ResolveUrl,
+    I: InterceptRequest,
 {
     /// Constructor
     ///
     /// It wraps a `Pretend` instance
-    pub fn new(pretend: &'p Pretend<C, R>) -> Self {
+    pub fn new(pretend: &'p Pretend<C, R, I>) -> Self {
         MacroSupport { pretend }
     }
 
@@ -68,7 +72,7 @@ where
         T: Serialize,
     {
         let client = &self.pretend.client;
-        let (headers, body) = self.prepare_request(headers, body)?;
+        let (method, url, headers, body) = self.prepare_request(method, url, headers, body)?;
         client.execute(method, url, headers, body).await
     }
 
@@ -88,7 +92,7 @@ where
         T: Serialize,
     {
         let client = &self.pretend.client;
-        let (headers, body) = self.prepare_request(headers, body)?;
+        let (method, url, headers, body) = self.prepare_request(method, url, headers, body)?;
         client.execute(method, url, headers, body).await
     }
 
@@ -108,19 +112,21 @@ where
         T: Serialize,
     {
         let client = &self.pretend.client;
-        let (headers, body) = self.prepare_request(headers, body)?;
+        let (method, url, headers, body) = self.prepare_request(method, url, headers, body)?;
         client.execute(method, url, headers, body)
     }
 
     fn prepare_request<'a, T>(
         &'a self,
+        method: Method,
+        url: Url,
         mut headers: HeaderMap,
         body: Body<'a, T>,
-    ) -> Result<(HeaderMap, Option<Bytes>)>
+    ) -> Result<(Method, Url, HeaderMap, Option<Bytes>)>
     where
         T: Serialize,
     {
-        let result = match body {
+        let (headers, body) = match body {
             Body::None => (headers, None),
             Body::Raw(raw) => (headers, Some(raw)),
             Body::Form(form) => {
@@ -144,7 +150,10 @@ where
                 (headers, body)
             }
         };
-        Ok(result)
+
+        let request = Request::new(method, url, headers);
+        let request = self.pretend.interceptor.intercept(request)?;
+        Ok((request.method, request.url, request.headers, body))
     }
 }
 
