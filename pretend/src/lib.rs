@@ -300,12 +300,12 @@
 //! Here is a quick roadmap
 //!
 //! - Introduce more attributes to mark method parameters (body, json, params)
-//! - Introduce interceptors
 
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
 
 pub mod client;
+pub mod interceptor;
 pub mod internal;
 pub mod resolver;
 
@@ -319,6 +319,7 @@ pub use serde;
 pub use url;
 pub use url::Url;
 
+use crate::interceptor::{InterceptRequest, NoopRequestInterceptor};
 use crate::resolver::{InvalidUrlResolver, ResolveUrl, UrlResolver};
 use serde::de::DeserializeOwned;
 use std::ops::{Deref, DerefMut};
@@ -375,58 +376,69 @@ impl<T> Response<T> {
 ///
 /// See crate level documentation for more information
 #[derive(Clone, Debug)]
-pub struct Pretend<C, R>
+pub struct Pretend<C, R, I>
 where
     R: ResolveUrl,
+    I: InterceptRequest,
 {
     client: C,
     resolver: R,
+    interceptor: I,
 }
 
-impl<C, R> Pretend<C, R>
+impl<C, R, I> Pretend<C, R, I>
 where
     R: ResolveUrl,
+    I: InterceptRequest,
 {
     /// Constructor
     ///
-    /// This constructor takes a client implementation and an URL resolver.
-    /// Prefer using [`Pretend::for_client`] and [`Pretend::with_url`].
-    pub fn new(client: C, resolver: R) -> Pretend<C, R> {
-        Pretend { client, resolver }
+    /// This constructor takes a client implementation, an URL resolver and
+    /// an interceptor. Prefer using [`Pretend::for_client`] and [`Pretend::with_url`].
+    pub fn new(client: C, resolver: R, interceptor: I) -> Pretend<C, R, I> {
+        Pretend {
+            client,
+            resolver,
+            interceptor,
+        }
     }
 
     /// Set the base URL
     ///
     /// Set the base URL for this client.
-    pub fn with_url(self, url: Url) -> Pretend<C, UrlResolver> {
+    pub fn with_url(self, url: Url) -> Pretend<C, UrlResolver, I> {
         self.with_url_resolver(UrlResolver::new(url))
+    }
+
+    /// Set the request interceptor
+    ///
+    /// Set the request interceptor for this client.
+    pub fn with_request_interceptor<II>(self, interceptor: II) -> Pretend<C, R, II>
+    where
+        II: InterceptRequest,
+    {
+        Pretend::new(self.client, self.resolver, interceptor)
     }
 
     /// Set the URL resolver
     ///
     /// Set the URL resolver for this client.
-    pub fn with_url_resolver<RR>(self, resolver: RR) -> Pretend<C, RR>
+    pub fn with_url_resolver<RR>(self, resolver: RR) -> Pretend<C, RR, I>
     where
         RR: ResolveUrl,
     {
-        Pretend {
-            client: self.client,
-            resolver,
-        }
+        Pretend::new(self.client, resolver, self.interceptor)
     }
 }
 
-impl<C> Pretend<C, InvalidUrlResolver> {
+impl<C> Pretend<C, InvalidUrlResolver, NoopRequestInterceptor> {
     /// Constructor
     ///
     /// This constructor takes a client implementation and
     /// return an incomplete `Pretend` client. Use [`Pretend::with_url`] to
     /// set the base URL.
-    pub fn for_client(client: C) -> Pretend<C, InvalidUrlResolver> {
-        Pretend {
-            client,
-            resolver: InvalidUrlResolver,
-        }
+    pub fn for_client(client: C) -> Pretend<C, InvalidUrlResolver, NoopRequestInterceptor> {
+        Pretend::new(client, InvalidUrlResolver, NoopRequestInterceptor)
     }
 }
 

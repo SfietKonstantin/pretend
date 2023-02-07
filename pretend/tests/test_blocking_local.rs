@@ -1,7 +1,6 @@
 mod runtimes;
 mod server;
 
-use pretend::resolver::UrlResolver;
 use pretend::{pretend, Pretend, Result, Url};
 use pretend_reqwest::BlockingClient;
 use pretend_reqwest::Client;
@@ -24,13 +23,13 @@ fn pretend_with_local_and_blocking() {
 
     server::test(|| {
         runtimes::block_on(async {
-            let client = Pretend::new(Client::default(), UrlResolver::new(url.clone()));
+            let client = Pretend::for_client(Client::default()).with_url(url.clone());
             let result = TestApiLocal::get(&client).await;
             assert!(result.is_ok());
         });
 
         {
-            let client = Pretend::new(BlockingClient::default(), UrlResolver::new(url.clone()));
+            let client = Pretend::for_client(BlockingClient::default()).with_url(url.clone());
             let result = TestApiBlocking::get(&client);
             assert!(result.is_ok());
         }

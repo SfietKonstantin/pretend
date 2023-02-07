@@ -2,9 +2,8 @@ mod runtimes;
 mod server;
 
 use self::api::TestApi;
-use pretend::resolver::UrlResolver;
 use pretend::{Pretend, Url};
-use pretend_reqwest::Client as RClient;
+use pretend_reqwest::Client;
 
 mod api {
     use pretend::{pretend, Result};
@@ -18,7 +17,7 @@ mod api {
 
 fn new_client() -> impl TestApi {
     let url = Url::parse(server::URL).unwrap();
-    Pretend::new(RClient::default(), UrlResolver::new(url))
+    Pretend::for_client(Client::default()).with_url(url)
 }
 
 #[test]
