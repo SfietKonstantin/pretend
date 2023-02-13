@@ -49,7 +49,7 @@ impl ResolveUrl for UrlResolver {
 ///
 /// `[Pretend::with_url]` or `[Pretend::with_url_resolver]` should be used to
 /// set a valid URL resolver.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct InvalidUrlResolver;
 
 impl ResolveUrl for InvalidUrlResolver {
