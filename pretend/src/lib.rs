@@ -321,6 +321,7 @@ pub use url::Url;
 
 use crate::resolver::{InvalidUrlResolver, ResolveUrl, UrlResolver};
 use serde::de::DeserializeOwned;
+use std::ops::{Deref, DerefMut};
 
 /// Response type
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -457,6 +458,35 @@ where
 {
     fn as_ref(&self) -> &T {
         &self.value
+    }
+}
+
+impl<T> AsMut<T> for Json<T>
+where
+    T: DeserializeOwned,
+{
+    fn as_mut(&mut self) -> &mut T {
+        &mut self.value
+    }
+}
+
+impl<T> Deref for Json<T>
+where
+    T: DeserializeOwned,
+{
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
+    }
+}
+
+impl<T> DerefMut for Json<T>
+where
+    T: DeserializeOwned,
+{
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.value
     }
 }
 
