@@ -1,6 +1,7 @@
+use pretend::http::header::AUTHORIZATION;
 use pretend::http::HeaderValue;
 use pretend::interceptor::{InterceptRequest, Request};
-use pretend::{pretend, Pretend, Result, Url};
+use pretend::{pretend, Error, Pretend, Result, Url};
 use pretend_reqwest::Client;
 
 // This example show how to use an interceptor to override headers
@@ -11,12 +12,24 @@ trait HttpBin {
     async fn get(&self) -> Result<String>;
 }
 
-struct AuthInterceptor;
+struct AuthInterceptor {
+    auth: String,
+}
+
+impl AuthInterceptor {
+    fn new(auth: String) -> Self {
+        AuthInterceptor { auth }
+    }
+}
 
 impl InterceptRequest for AuthInterceptor {
     fn intercept(&self, mut request: Request) -> Result<Request> {
-        let value = HeaderValue::from_static("Bearer abcde");
-        request.headers.append("Authorization", value);
+        // Create the header, reporting failure if the header is invalid
+        let header = format!("Bearer {}", self.auth);
+        let header = HeaderValue::from_str(&header).map_err(|err| Error::Request(Box::new(err)))?;
+
+        // Set the authorization header in the request
+        request.headers.append(AUTHORIZATION, header);
         Ok(request)
     }
 }
@@ -25,7 +38,7 @@ fn create_pretend() -> impl HttpBin {
     let url = Url::parse("https://httpbin.org").unwrap();
     Pretend::for_client(Client::default())
         .with_url(url)
-        .with_request_interceptor(AuthInterceptor)
+        .with_request_interceptor(AuthInterceptor::new("test".to_string()))
 }
 
 #[tokio::main]
