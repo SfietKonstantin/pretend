@@ -131,19 +131,19 @@
 //! #[pretend]
 //! trait HttpBin {
 //!     #[request(method = "POST", path = "/anything")]
-//!     async fn read_bytes(&self) -> Result<Vec<u8>>;
+//!     async fn get_bytes(&self) -> Result<Vec<u8>>;
 //!
 //!     #[request(method = "POST", path = "/anything")]
-//!     async fn read_string(&self) -> Result<String>;
+//!     async fn get_string(&self) -> Result<String>;
 //!
 //!     #[request(method = "POST", path = "/anything")]
-//!     async fn read_json(&self) -> Result<Json<Data>>;
+//!     async fn get_json(&self) -> Result<Json<Data>>;
 //!
 //!     #[request(method = "POST", path = "/anything")]
-//!     async fn read_json_result(&self) -> Result<JsonResult<Data, Error>>;
+//!     async fn get_json_result(&self) -> Result<JsonResult<Data, Error>>;
 //!
 //!     #[request(method = "POST", path = "/anything")]
-//!     async fn read_status(&self) -> Result<Response<()>>;
+//!     async fn get_status(&self) -> Result<Response<()>>;
 //! }
 //! ```
 //!
@@ -154,11 +154,10 @@
 //! any type that implement `Display` is supported.
 //!
 //! ```rust
-//! use pretend::{pretend, Json, Pretend, Result};
+//! use pretend::{pretend, Json, Pretend, Result, Url};
 //! use pretend_reqwest::Client;
 //! use serde::Deserialize;
 //! use std::collections::HashMap;
-//! # use pretend::Url;
 //!
 //! #[derive(Deserialize)]
 //! struct Data {
@@ -170,7 +169,7 @@
 //! trait HttpBin {
 //!     #[request(method = "POST", path = "/{path}")]
 //!     #[header(name = "X-{header}", value = "{value}$")]
-//!     async fn read(&self, path: &str, header: &str, value: i32) -> Result<Json<Data>>;
+//!     async fn get(&self, path: &str, header: &str, value: i32) -> Result<Json<Data>>;
 //! }
 //!
 //! # #[tokio::main]
@@ -178,19 +177,92 @@
 //! let client = Client::default();
 //! let url = Url::parse("https://httpbin.org").unwrap();
 //! let pretend = Pretend::for_client(client).with_url(url);
-//! let response = pretend.read("anything", "My-Header", 123).await.unwrap();
+//! let response = pretend.get("anything", "My-Header", 123).await.unwrap();
 //! let data = response.value();
 //! assert_eq!(data.url, "https://httpbin.org/anything");
 //! assert_eq!(*data.headers.get("X-My-Header").unwrap(), "123$".to_string());
 //! # }
 //! ```
 //!
+//! # URL resolvers
+//!
+//! `pretend` uses URL resolvers to resolve a full URL from the path in `request`. By default
+//! the URL resolver will simply append the path to a base URL. More advanced resolvers can
+//! be implemented with the [resolver] module.
+//!
+//! # Request interceptors
+//!
+//! `pretend` uses request interceptors to customize auto-generated requests. They can be useful
+//! when dealing with authentication. They can be implemented with the [interceptor] module.
+//!
+//! ```rust
+//! use pretend::http::header::AUTHORIZATION;
+//! use pretend::http::HeaderValue;
+//! use pretend::interceptor::{InterceptRequest, Request};
+//! use pretend::{pretend, Error, Json, Pretend, Result, Url};
+//! use pretend_reqwest::Client;
+//! use serde::Deserialize;
+//! use std::collections::HashMap;
+//!
+//! #[derive(Deserialize)]
+//! struct Data {
+//!     url: String,
+//!     headers: HashMap<String, String>,
+//! }
+//!
+//! #[pretend]
+//! trait HttpBin {
+//!     #[request(method = "GET", path = "/get")]
+//!     async fn get(&self) -> Result<Json<Data>>;
+//! }
+//!
+//! struct AuthInterceptor {
+//!     auth: String,
+//! }
+//!
+//! impl AuthInterceptor {
+//!     fn new(auth: String) -> Self {
+//!         AuthInterceptor { auth }
+//!     }
+//! }
+//!
+//! impl InterceptRequest for AuthInterceptor {
+//!     fn intercept(&self, mut request: Request) -> Result<Request> {
+//!         // Create the header, reporting failure if the header is invalid
+//!         let header = format!("Bearer {}", self.auth);
+//!         let header = HeaderValue::from_str(&header).map_err(|err| Error::Request(Box::new(err)))?;
+//!
+//!         // Set the authorization header in the request
+//!         request.headers.append(AUTHORIZATION, header);
+//!         Ok(request)
+//!     }
+//! }
+//! # #[tokio::main]
+//! # async fn main() {
+//! let client = Client::default();
+//! let url = Url::parse("https://httpbin.org").unwrap();
+//! let auth_interceptor = AuthInterceptor::new("test".to_string());
+//! let pretend = Pretend::for_client(client).with_url(url).with_request_interceptor(auth_interceptor);
+//! let response = pretend.get().await.unwrap();
+//! let data = response.value();
+//! assert_eq!(*data.headers.get("Authorization").unwrap(), "Bearer test".to_string());
+//! # }
+//! ```
+//!
+//! # Examples
+//!
+//! More examples are available in the [examples folder].
+//!
+//! [examples folder]: https://github.com/SfietKonstantin/pretend/tree/main/pretend/examples
+//!
 //! # Blocking requests
 //!
 //! When all methods in the `pretend`-annotated trait are async, `pretend` will generate
-//! an async implementation. To generate a blocking implementation, simply remove the `async`.
+//! an async implementation. To generate a blocking implementation, simply remove the `async`
+//! keyword.
 //!
-//! Blocking implementations will need a blocking client implementation.
+//! Blocking implementations needs a blocking client implementation to be used. In the following
+//! example, we are using one provided by [`reqwest`]
 //!
 //! ```rust
 //! use pretend::{pretend, Pretend, Result, Url};
@@ -211,13 +283,14 @@
 //! # }
 //! ```
 //!
+//! [`reqwest`]: https://crates.io/crates/pretend-reqwest
+//!
 //! # Non-Send implementation
 //!
 //! Today, Rust does not support futures in traits. `pretend` uses `async_trait` to workaround
 //! that limitation. By default, `async_trait` adds the `Send` bound to futures. This implies
 //! that `Pretend` itself is `Send` and `Sync`, and implies that the client implementation it uses
 //! is also `Send` and `Sync`.
-//!
 //!
 //! However, some clients are not thread-safe, and cannot be shared between threads. To use
 //! these clients with `Pretend`, you have to opt-out from the `Send` constraint on returned
@@ -278,18 +351,6 @@
 //! `pretend` clients wraps HTTP clients from other crates. They allow [`Pretend`] to execute
 //! HTTP requests. See the [client] module level documentation for more information about
 //! how to implement a client.
-//!
-//! # URL resolvers
-//!
-//! `pretend` uses URL resolvers to resolve a full URL from the path in `request`. By default
-//! the URL resolver will simply append the path to a base URL. More advanced resolvers can
-//! be implemented with the [resolver] module.
-//!
-//! # Examples
-//!
-//! More examples are available in the [examples folder].
-//!
-//! [examples folder]: https://github.com/SfietKonstantin/pretend/tree/main/pretend/examples
 //!
 //! # MSRV
 //!

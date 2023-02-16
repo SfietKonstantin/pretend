@@ -5,7 +5,7 @@
 //! it is being executed.
 //!
 //! Interceptors can facilitate setting common headers, like
-//! an user-agent, or  injecting an authentication token.
+//! an user-agent, or injecting an authentication token.
 //!
 //! By default a [`NoopRequestInterceptor`] is used, and will
 //! not modify the request.
