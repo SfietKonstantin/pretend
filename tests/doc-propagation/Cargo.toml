@@ -1,0 +1,10 @@
+[package]
+name = "pretend-test-doc-propagation"
+version = "0.0.0"
+edition = "2018"
+
+[dependencies]
+pretend = { path = "../../pretend" }
+pretend-codegen = { path = "../../pretend-codegen" }
+
+[workspace]

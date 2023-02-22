@@ -29,6 +29,7 @@ fn implement_pretend(attr: PretendAttr, item: ItemTrait) -> Result<TokenStream2>
     let name = &item.ident;
     let vis = &item.vis;
     let items = &item.items;
+    let attrs = &item.attrs;
     let trait_items = items.iter().map(trait_item).collect::<Vec<_>>();
 
     let kind = parse_client_kind(name, attr, items)?;
@@ -43,6 +44,7 @@ fn implement_pretend(attr: PretendAttr, item: ItemTrait) -> Result<TokenStream2>
     let send_sync = send_sync_traits_impl(&kind);
     let tokens = quote! {
         #attr
+        #(#attrs)*
         #vis trait #name {
             #(#trait_items)*
         }
