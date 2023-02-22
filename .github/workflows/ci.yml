@@ -45,6 +45,19 @@ jobs:
 
       - run: cd tests/default-features-build && cargo test
 
+  test-doc-propagation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          default: true
+
+      - run: cd tests/doc-propagation && cargo test
+
   test-msrv-check:
     runs-on: ubuntu-latest
     steps:
